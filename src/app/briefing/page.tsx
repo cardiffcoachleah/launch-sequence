@@ -288,7 +288,7 @@ export default function BriefingPage() {
 
           {/* Cards */}
           {currentStep.type === "cards" && (
-            <div style={{ display: "grid", gap: "8px", marginBottom: "32px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: (currentStep.id === "function_area" || currentStep.id === "level" || currentStep.id === "team_size") ? "repeat(2, 1fr)" : "1fr", gap: "8px", marginBottom: "32px" }}>
               {(currentStep.options as { value: string; description: string }[]).map((opt) => (
                 <div
                   key={opt.value}
@@ -299,7 +299,14 @@ export default function BriefingPage() {
                   tabIndex={0}
                   onKeyDown={(e) => e.key === "Enter" && updateField(opt.value)}
                 >
-                  <div className="card-title">{opt.value}</div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                    <div className="card-title">{opt.value}</div>
+                    {data[currentStep.field] === opt.value && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-teal)", flexShrink: 0 }} aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                  </div>
                   {opt.description && (
                     <div className="card-desc">{opt.description}</div>
                   )}
