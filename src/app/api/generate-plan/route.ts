@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     const briefing = await req.json();
@@ -82,7 +84,7 @@ WHAT SUCCESS LOOKS LIKE: ${briefing.what_success_looks_like}`;
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 4000,
         messages: [
           {
