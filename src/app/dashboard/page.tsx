@@ -73,8 +73,59 @@ export default function DashboardPage() {
 
       setUserEmail(user.email || "");
 
-      // Get most recent briefing
-      const { data: briefingData } = await supabase
+      // Check if we have a pending plan in sessionStorage to save
+      const sessionPlan = sessionStorage.getItem("launchsequence_plan");
+      const sessionBriefing = sessionStorage.getItem("launchsequence_briefing");
+
+      if (sessionPlan && sessionBriefing) {
+        try {
+          const briefingData = JSON.parse(sessionBriefing);
+          const planData = JSON.parse(sessionPlan);
+
+          // Check if already saved (avoid duplicates)
+          const { data: existingPlans } = await supabase
+            .from("plans")
+            .select("id")
+            .eq("user_id", user.id)
+            .limit(1);
+
+          if (!existingPlans || existingPlans.length === 0) {
+            // Save briefing
+            const { data: briefingRow } = await supabase
+              .from("briefings")
+              .insert({
+                user_id: user.id,
+                role: `${briefingData.function_area} — ${briefingData.level}`,
+                company_stage: briefingData.company_stage,
+                team_situation: briefingData.team_situation,
+                reporting_to: briefingData.reporting_to,
+                team_size: briefingData.team_size,
+                start_date: briefingData.start_date,
+                biggest_concern: briefingData.biggest_concern,
+                what_success_looks_like: briefingData.what_success_looks_like,
+              })
+              .select()
+              .single();
+
+            if (briefingRow) {
+              await supabase.from("plans").insert({
+                user_id: user.id,
+                briefing_id: briefingRow.id,
+                plan_data: planData,
+              });
+            }
+          }
+
+          // Clear sessionStorage now that it's saved
+          sessionStorage.removeItem("launchsequence_plan");
+          sessionStorage.removeItem("launchsequence_briefing");
+        } catch (e) {
+          console.error("Failed to save session data:", e);
+        }
+      }
+
+      // Load from Supabase
+      const { data: briefingRow } = await supabase
         .from("briefings")
         .select("*")
         .eq("user_id", user.id)
@@ -82,16 +133,14 @@ export default function DashboardPage() {
         .limit(1)
         .single();
 
-      if (!briefingData) {
-        // No briefing yet, send to briefing flow
+      if (!briefingRow) {
         router.push("/briefing");
         return;
       }
 
-      setBriefing(briefingData);
+      setBriefing(briefingRow);
 
-      // Get most recent plan
-      const { data: planData } = await supabase
+      const { data: planRow } = await supabase
         .from("plans")
         .select("*")
         .eq("user_id", user.id)
@@ -99,21 +148,8 @@ export default function DashboardPage() {
         .limit(1)
         .single();
 
-      if (planData) setPlan(planData);
+      if (planRow) setPlan(planRow);
       setLoading(false);
-    }
-
-    // Also check sessionStorage as fallback
-    const sessionPlan = sessionStorage.getItem("launchsequence_plan");
-    const sessionBriefing = sessionStorage.getItem("launchsequence_briefing");
-    if (sessionPlan && sessionBriefing) {
-      try {
-        const b = JSON.parse(sessionBriefing);
-        setBriefing({ id: "session", start_date: b.start_date, role: `${b.function_area} — ${b.level}`, company_stage: b.company_stage });
-        setPlan({ id: "session", plan_data: JSON.parse(sessionPlan), created_at: new Date().toISOString(), briefing_id: "session" });
-        setLoading(false);
-        return;
-      } catch { /* fall through to Supabase */ }
     }
 
     load();
