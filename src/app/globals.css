@@ -189,21 +189,21 @@ label {
 /* Selection cards (radio-like) */
 .selection-card {
   padding: 14px 18px;
-  background: rgba(14, 178, 205, 0.04);
-  border: 1px solid var(--color-border-subtle);
+  background: rgba(14, 178, 205, 0.06);
+  border: 1px solid rgba(14, 178, 205, 0.25);
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .selection-card:hover {
-  border-color: var(--color-border);
-  background: var(--color-teal-glow);
+  border-color: rgba(14, 178, 205, 0.5);
+  background: rgba(14, 178, 205, 0.1);
 }
 
 .selection-card.selected {
   border-color: var(--color-teal);
-  background: var(--color-teal-dim);
+  background: rgba(14, 178, 205, 0.15);
 }
 
 /* Loading / generating state */
