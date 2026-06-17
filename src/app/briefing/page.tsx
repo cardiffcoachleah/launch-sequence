@@ -237,9 +237,9 @@ export default function BriefingPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md px-6">
             <div className="generating mb-4">Generating your flight plan...</div>
-            <p style={{ color: "var(--color-text-tertiary)", fontSize: "14px" }}>
-              Analyzing your mission parameters and building a personalized
-              transition plan. This takes about 15 seconds.
+            <p style={{ color: "var(--color-text-tertiary)", fontSize: "14px", lineHeight: "1.6" }}>
+              Building your personalized transition plan. This usually takes
+              under a minute. Worth the wait.
             </p>
           </div>
         </div>
