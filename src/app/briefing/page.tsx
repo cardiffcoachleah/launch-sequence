@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
+import { createClient } from "@/lib/supabase/client";
 
 interface BriefingData {
+  email: string;
   function_area: string;
   level: string;
   company_stage: string;
@@ -17,6 +19,13 @@ interface BriefingData {
 }
 
 const STEPS = [
+  {
+    id: "email",
+    label: "First, where do we send your plan?",
+    sublabel: "Your email is how you access your mission dashboard and save your progress. No password needed.",
+    type: "email" as const,
+    field: "email" as keyof BriefingData,
+  },
   {
     id: "function_area",
     label: "What do you do?",
@@ -183,6 +192,7 @@ export default function BriefingPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<BriefingData>({
+    email: "",
     function_area: "",
     level: "",
     company_stage: "",
@@ -208,6 +218,7 @@ export default function BriefingPage() {
       setIsGenerating(true);
       setError(null);
       try {
+        // Generate the plan
         const res = await fetch("/api/generate-plan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -217,8 +228,50 @@ export default function BriefingPage() {
         if (!res.ok || result.error) {
           throw new Error(result.error || `Server error ${res.status}`);
         }
+
+        // Store in sessionStorage as fallback
         sessionStorage.setItem("launchsequence_plan", JSON.stringify(result));
         sessionStorage.setItem("launchsequence_briefing", JSON.stringify(data));
+
+        // Sign in / create account with magic link, then save to Supabase
+        const supabase = createClient();
+
+        // Sign user in with OTP (creates account if first time)
+        await supabase.auth.signInWithOtp({
+          email: data.email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          },
+        });
+
+        // Try to save immediately if user already has a session
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: briefingRow } = await supabase
+            .from("briefings")
+            .insert({
+              user_id: user.id,
+              role: `${data.function_area} — ${data.level}`,
+              company_stage: data.company_stage,
+              team_situation: data.team_situation,
+              reporting_to: data.reporting_to,
+              team_size: data.team_size,
+              start_date: data.start_date,
+              biggest_concern: data.biggest_concern,
+              what_success_looks_like: data.what_success_looks_like,
+            })
+            .select()
+            .single();
+
+          if (briefingRow) {
+            await supabase.from("plans").insert({
+              user_id: user.id,
+              briefing_id: briefingRow.id,
+              plan_data: result,
+            });
+          }
+        }
+
         router.push("/plan");
       } catch (err) {
         console.error("Plan generation failed:", err);
@@ -271,6 +324,19 @@ export default function BriefingPage() {
           <p style={{ fontSize: "14px", color: "var(--color-text-tertiary)", marginBottom: "32px" }}>
             {currentStep.sublabel}
           </p>
+
+          {/* Email */}
+          {currentStep.type === "email" && (
+            <input
+              type="email"
+              value={data[currentStep.field]}
+              onChange={(e) => updateField(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && canProceed && handleNext()}
+              placeholder="you@company.com"
+              autoFocus
+              style={{ marginBottom: "32px" }}
+            />
+          )}
 
           {/* Select */}
           {currentStep.type === "select" && (
