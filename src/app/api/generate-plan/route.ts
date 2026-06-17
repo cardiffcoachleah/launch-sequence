@@ -64,7 +64,8 @@ Return ONLY the JSON. No markdown, no code fences, no explanation.`;
 
     const userPrompt = `Generate a personalized 90-day transition plan for this leader:
 
-ROLE: ${briefing.role}
+FUNCTION: ${briefing.function_area}
+LEVEL: ${briefing.level}
 COMPANY STAGE: ${briefing.company_stage}
 TEAM SITUATION: ${briefing.team_situation}
 REPORTS TO: ${briefing.reporting_to}
