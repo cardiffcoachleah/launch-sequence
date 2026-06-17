@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
   try {
@@ -29,7 +29,7 @@ Return ONLY a valid JSON object with this structure:
       {
         "title": "Action title",
         "description": "2-3 sentences of specific, actionable guidance",
-        "category": "relationships" | "strategy" | "self" | "logistics"
+        "category": "relationships"
       }
     ],
     "reflection": "One reflection prompt for this phase"
@@ -37,32 +37,32 @@ Return ONLY a valid JSON object with this structure:
   "observe": {
     "title": "Days 1 to 30: Observe",
     "description": "A brief 1-2 sentence framing",
-    "actions": [...],
+    "actions": [],
     "reflection": "Reflection prompt"
   },
   "orient": {
     "title": "Days 31 to 60: Orient",
     "description": "A brief 1-2 sentence framing",
-    "actions": [...],
+    "actions": [],
     "reflection": "Reflection prompt"
   },
   "act": {
     "title": "Days 61 to 90: Act",
     "description": "A brief 1-2 sentence framing",
-    "actions": [...],
+    "actions": [],
     "reflection": "Reflection prompt"
   }
 }
 
-Generate 4-6 actions per phase. Make them specific to this person's role, company stage, team situation, and concerns. The T-10 phase should have 3-5 actions (it is a shorter period).
-
-Categories help with visual organization:
+Category must be one of these exact strings: "relationships", "strategy", "self", "logistics"
 - "relationships" = people, 1:1s, stakeholder mapping, trust building
 - "strategy" = understanding the business, forming a point of view, making decisions
 - "self" = wellbeing, reflection, managing energy, imposter syndrome
 - "logistics" = practical setup, tools, processes, team structure
 
-Return ONLY the JSON. No markdown, no code fences, no explanation.`;
+Generate 4-6 actions per phase. Make them specific to this person's role, company stage, team situation, and concerns. The T-10 phase should have 3-5 actions (it is a shorter period).
+
+Return ONLY valid JSON. No markdown, no code fences, no explanation, no trailing commas.`;
 
     const userPrompt = `Generate a personalized 90-day transition plan for this leader:
 
@@ -84,23 +84,18 @@ WHAT SUCCESS LOOKS LIKE: ${briefing.what_success_looks_like}`;
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-4-6-20250514",
         max_tokens: 4000,
-        messages: [
-          {
-            role: "user",
-            content: userPrompt,
-          },
-        ],
+        messages: [{ role: "user", content: userPrompt }],
         system: systemPrompt,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Anthropic API error:", errorText);
+      console.error("Anthropic API error:", response.status, errorText);
       return NextResponse.json(
-        { error: "Failed to generate plan" },
+        { error: `API error ${response.status}`, detail: errorText },
         { status: 500 }
       );
     }
@@ -111,14 +106,14 @@ WHAT SUCCESS LOOKS LIKE: ${briefing.what_success_looks_like}`;
       .map((block: { text: string }) => block.text)
       .join("");
 
-    // Parse the JSON from Claude's response
-    const plan = JSON.parse(text.replace(/```json|```/g, "").trim());
+    const cleaned = text.replace(/```json|```/g, "").trim();
+    const plan = JSON.parse(cleaned);
 
     return NextResponse.json(plan);
   } catch (error) {
     console.error("Plan generation error:", error);
     return NextResponse.json(
-      { error: "Failed to generate plan" },
+      { error: "Failed to generate plan", detail: String(error) },
       { status: 500 }
     );
   }
