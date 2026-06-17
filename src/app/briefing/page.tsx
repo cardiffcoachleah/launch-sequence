@@ -108,8 +108,8 @@ const STEPS = [
         description: "The team exists but needs reshaping. Hard conversations ahead.",
       },
       {
-        value: "Joining as a peer leader",
-        description: "You are not managing the team directly. Influence over authority.",
+        value: "Joining as a peer leader (individual contributor)",
+        description: "You are not managing a team directly. Influence over authority.",
       },
     ],
     field: "team_situation" as keyof BriefingData,
@@ -120,11 +120,15 @@ const STEPS = [
     sublabel: "Your manager relationship shapes everything in the first 90 days.",
     type: "select" as const,
     options: [
-      "CEO / Founder",
-      "CTO",
-      "COO",
+      "Team Lead / Senior IC",
+      "Manager",
+      "Senior Manager",
+      "Director",
+      "Senior Director",
+      "VP",
       "SVP / EVP",
-      "VP (another VP)",
+      "C-suite (CEO, CTO, COO, etc.)",
+      "Founder",
       "Board / Investors",
       "Other",
     ],
@@ -324,8 +328,11 @@ export default function BriefingPage() {
             <button
               onClick={() => setStep((s) => Math.max(0, s - 1))}
               className="back-link"
-              style={{ visibility: step === 0 ? "hidden" : "visible" }}
+              style={{ visibility: step === 0 ? "hidden" : "visible", display: "flex", alignItems: "center", gap: "6px" }}
             >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
               Back
             </button>
             <button
