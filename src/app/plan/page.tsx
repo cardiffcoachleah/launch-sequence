@@ -26,18 +26,18 @@ interface Plan {
 
 const categoryStyles: Record<string, { color: string; label: string }> = {
   relationships: { color: "var(--color-teal)", label: "Relationships" },
-  strategy: { color: "var(--color-mint)", label: "Strategy" },
-  self: { color: "var(--color-amber)", label: "Self" },
-  logistics: { color: "var(--color-white-45)", label: "Logistics" },
+  strategy:      { color: "var(--color-mint)", label: "Strategy" },
+  self:          { color: "var(--color-amber)", label: "Self" },
+  logistics:     { color: "var(--color-text-tertiary)", label: "Logistics" },
 };
 
 const phaseKeys: (keyof Plan)[] = ["t10", "observe", "orient", "act"];
 
 const phaseNumbers: Record<string, string> = {
-  t10: "T-10",
+  t10:     "T-10",
   observe: "01\u201330",
-  orient: "31\u201360",
-  act: "61\u201390",
+  orient:  "31\u201360",
+  act:     "61\u201390",
 };
 
 export default function PlanPage() {
@@ -63,9 +63,7 @@ export default function PlanPage() {
       <div className="min-h-screen flex flex-col">
         <Nav />
         <div className="flex-1 flex items-center justify-center">
-          <div className="instrument text-[var(--color-teal)] generating">
-            Loading flight plan...
-          </div>
+          <div className="generating">Loading flight plan...</div>
         </div>
       </div>
     );
@@ -77,22 +75,24 @@ export default function PlanPage() {
     <div className="min-h-screen flex flex-col">
       <Nav />
 
-      <div className="flex-1 flex">
-        {/* Phase sidebar */}
-        <aside className="w-64 border-r border-[var(--color-border-subtle)] p-6 shrink-0">
-          <p className="eyebrow mb-4">Mission phases</p>
-          <div className="space-y-1">
+      <div style={{ flex: 1, display: "flex" }}>
+
+        {/* Sidebar */}
+        <aside style={{
+          width: "240px",
+          borderRight: "1px solid var(--color-border-subtle)",
+          padding: "1.5rem",
+          flexShrink: 0,
+        }}>
+          <p className="eyebrow" style={{ marginBottom: "16px" }}>Mission phases</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {phaseKeys.map((key) => (
               <button
                 key={key}
                 onClick={() => setActivePhase(key)}
-                className={`w-full text-left px-3 py-2.5 rounded-[var(--radius)] transition-all text-sm ${
-                  activePhase === key
-                    ? "bg-[var(--color-teal-dim)] text-[var(--color-teal)]"
-                    : "text-[var(--color-white-45)] hover:text-[var(--color-white-85)] hover:bg-[var(--color-teal-glow)]"
-                }`}
+                className={`sidebar-item ${activePhase === key ? "active" : ""}`}
               >
-                <span className="instrument text-xs mr-2">
+                <span className="instrument" style={{ fontSize: "12px", marginRight: "8px", opacity: 0.7 }}>
                   {phaseNumbers[key]}
                 </span>
                 {plan[key].title.split(": ")[1] || plan[key].title}
@@ -100,16 +100,20 @@ export default function PlanPage() {
             ))}
           </div>
 
-          <div className="mt-8 pt-6 border-t border-[var(--color-border-subtle)]">
-            <p className="eyebrow mb-3">Legend</p>
-            <div className="space-y-2">
+          {/* Legend */}
+          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
+            <p className="eyebrow" style={{ marginBottom: "12px" }}>Legend</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {Object.entries(categoryStyles).map(([key, style]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: style.color }}
-                  />
-                  <span className="text-xs text-[var(--color-white-45)]">
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    backgroundColor: style.color,
+                    flexShrink: 0,
+                  }} />
+                  <span style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
                     {style.label}
                   </span>
                 </div>
@@ -118,34 +122,49 @@ export default function PlanPage() {
           </div>
         </aside>
 
-        {/* Plan content */}
-        <main className="flex-1 p-8 max-w-3xl">
-          <div className="mb-8">
-            <div className="phase-number text-2xl mb-2">
+        {/* Main content */}
+        <main style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "760px" }}>
+
+          {/* Phase header */}
+          <div style={{ marginBottom: "2rem" }}>
+            <div className="phase-number" style={{ fontSize: "1.5rem", marginBottom: "8px" }}>
               {phaseNumbers[activePhase]}
             </div>
-            <h1 className="text-3xl mb-3">{phase.title}</h1>
-            <p className="text-sm text-[var(--color-white-60)] leading-relaxed max-w-xl">
+            <h1 style={{ fontSize: "2rem", marginBottom: "12px" }}>{phase.title}</h1>
+            <p style={{ fontSize: "15px", lineHeight: "1.7", color: "var(--color-text-secondary)", maxWidth: "560px" }}>
               {phase.description}
             </p>
           </div>
 
           {/* Actions */}
-          <div className="space-y-3 mb-10">
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2.5rem" }}>
             {phase.actions.map((action, i) => {
               const cat = categoryStyles[action.category] || categoryStyles.logistics;
               return (
                 <div key={i} className="card">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
-                      style={{ backgroundColor: cat.color }}
-                    />
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                    <div style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: cat.color,
+                      marginTop: "6px",
+                      flexShrink: 0,
+                    }} />
                     <div>
-                      <div className="text-sm font-medium text-[var(--color-white-95)] mb-1">
+                      <div style={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "var(--color-text-primary)",
+                        marginBottom: "4px",
+                      }}>
                         {action.title}
                       </div>
-                      <div className="text-[13px] text-[var(--color-white-45)] leading-relaxed">
+                      <div style={{
+                        fontSize: "14px",
+                        color: "var(--color-text-secondary)",
+                        lineHeight: "1.6",
+                      }}>
                         {action.description}
                       </div>
                     </div>
@@ -157,13 +176,22 @@ export default function PlanPage() {
 
           {/* Reflection prompt */}
           <div className="card-warm">
-            <p className="eyebrow mb-2" style={{ color: "var(--color-amber)" }}>
+            <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>
               Reflection
             </p>
-            <p className="text-sm text-[var(--color-white-85)] italic leading-relaxed" style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem" }}>
+            <p style={{
+              fontFamily: "var(--font-heading)",
+              fontSize: "1.15rem",
+              fontWeight: 300,
+              fontStyle: "italic",
+              color: "var(--color-text-primary)",
+              lineHeight: "1.6",
+              margin: 0,
+            }}>
               {phase.reflection}
             </p>
           </div>
+
         </main>
       </div>
     </div>
