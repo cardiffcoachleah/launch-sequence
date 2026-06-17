@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
 
 interface BriefingData {
-  role: string;
+  function_area: string;
+  level: string;
   company_stage: string;
   team_situation: string;
   reporting_to: string;
@@ -17,26 +18,42 @@ interface BriefingData {
 
 const STEPS = [
   {
-    id: "role",
-    label: "What role are you stepping into?",
-    sublabel: "Select the closest match.",
-    type: "select" as const,
+    id: "function_area",
+    label: "What do you do?",
+    sublabel: "The discipline or function you work in.",
+    type: "cards" as const,
     options: [
-      "Head of Product",
-      "VP of Product",
-      "Chief Product Officer",
-      "Director of Product",
-      "Head of Engineering",
-      "VP of Engineering",
-      "CTO",
-      "Director of Engineering",
-      "Head of Design",
-      "VP of Design",
-      "General Manager",
-      "Chief of Staff",
-      "Other leadership role",
+      { value: "Product", description: "" },
+      { value: "Engineering", description: "" },
+      { value: "Design", description: "" },
+      { value: "Marketing", description: "" },
+      { value: "Sales", description: "" },
+      { value: "Operations", description: "" },
+      { value: "HR / People", description: "" },
+      { value: "Finance", description: "" },
+      { value: "Data / Analytics", description: "" },
+      { value: "Founder / CEO", description: "" },
+      { value: "Other", description: "" },
     ],
-    field: "role" as keyof BriefingData,
+    field: "function_area" as keyof BriefingData,
+  },
+  {
+    id: "level",
+    label: "What level is the role?",
+    sublabel: "This helps us calibrate the scope and stakes of your transition.",
+    type: "cards" as const,
+    options: [
+      { value: "Manager / Lead", description: "" },
+      { value: "Senior Manager", description: "" },
+      { value: "Director", description: "" },
+      { value: "Senior Director", description: "" },
+      { value: "VP", description: "" },
+      { value: "SVP / EVP", description: "" },
+      { value: "C-suite (CTO, CPO, CMO, etc.)", description: "" },
+      { value: "General Manager", description: "" },
+      { value: "Other", description: "" },
+    ],
+    field: "level" as keyof BriefingData,
   },
   {
     id: "company_stage",
@@ -45,20 +62,28 @@ const STEPS = [
     type: "cards" as const,
     options: [
       {
-        value: "Startup (pre-product-market fit)",
-        description: "Still finding the path. Speed and scrappiness matter.",
+        value: "Early-stage startup (pre-product-market fit)",
+        description: "Still finding the path. Speed and scrappiness matter most.",
       },
       {
-        value: "Scaleup (growing fast)",
-        description: "The machine is running. Your job is to keep up and shape it.",
+        value: "Growth-stage startup (post-PMF, scaling)",
+        description: "You found the thing. Now you need to scale it without breaking it.",
       },
       {
-        value: "Enterprise (established)",
-        description: "Big org, deep history. Politics and alignment are real.",
+        value: "Scaleup (hundreds of people, finding structure)",
+        description: "Growing fast, adding process. The org is outrunning its systems.",
       },
       {
-        value: "Turnaround (in trouble)",
-        description: "Something is broken. You were hired to fix it.",
+        value: "Corporate (large, established organization)",
+        description: "Complex org, deep history. Alignment and politics are real.",
+      },
+      {
+        value: "Turnaround (something needs fixing)",
+        description: "Performance issues, cultural debt, or strategic misalignment. You were hired to change things.",
+      },
+      {
+        value: "Post-acquisition or merger",
+        description: "Two worlds colliding. Your job is to make sense of the overlap.",
       },
     ],
     field: "company_stage" as keyof BriefingData,
@@ -153,7 +178,8 @@ export default function BriefingPage() {
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [data, setData] = useState<BriefingData>({
-    role: "",
+    function_area: "",
+    level: "",
     company_stage: "",
     team_situation: "",
     reporting_to: "",
