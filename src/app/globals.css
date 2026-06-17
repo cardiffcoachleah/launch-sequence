@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* ============================================
+   LAUNCH SEQUENCE — Design System
+   Brand: Navy / Teal / Deep Teal / Mint / Amber
+   Dark mode only. No light backgrounds.
+   ============================================ */
+
+@theme {
+  --color-navy: #00001A;
+  --color-navy-light: #0A0A2E;
+  --color-teal: #0EB2CD;
+  --color-teal-dim: rgba(14, 178, 205, 0.15);
+  --color-teal-glow: rgba(14, 178, 205, 0.08);
+  --color-deep-teal: #067181;
+  --color-mint: #6AE8A4;
+  --color-amber: #F5A623;
+  --color-amber-dim: rgba(245, 166, 35, 0.15);
+  --color-white: #FFFFFF;
+  --color-white-95: rgba(255, 255, 255, 0.95);
+  --color-white-85: rgba(255, 255, 255, 0.85);
+  --color-white-60: rgba(255, 255, 255, 0.6);
+  --color-white-45: rgba(255, 255, 255, 0.45);
+  --color-white-30: rgba(255, 255, 255, 0.3);
+  --color-white-15: rgba(255, 255, 255, 0.15);
+  --color-border: rgba(6, 113, 129, 0.3);
+  --color-border-subtle: rgba(6, 113, 129, 0.15);
+
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+
+  --radius: 2px;
+}
+
+/* Base */
+html {
+  background-color: var(--color-navy);
+  color: var(--color-white-85);
+  font-family: var(--font-body);
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--color-navy);
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  color: var(--color-white);
+}
+
+/* Eyebrow / label text */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-teal);
+}
+
+/* Instrument / data text */
+.instrument {
+  font-family: var(--font-mono);
+}
+
+/* Links */
+a {
+  color: var(--color-teal);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-mint);
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background-color: var(--color-teal);
+  color: var(--color-navy);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-mint);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  color: var(--color-teal);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: 1px solid rgba(14, 178, 205, 0.4);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-teal);
+  background-color: var(--color-teal-glow);
+}
+
+/* Cards */
+.card {
+  background: var(--color-teal-glow);
+  border: 1px solid rgba(14, 178, 205, 0.2);
+  border-radius: var(--radius);
+  padding: 1.25rem 1rem;
+}
+
+.card-warm {
+  background: var(--color-amber-dim);
+  border: 1px solid rgba(245, 166, 35, 0.2);
+  border-radius: var(--radius);
+  padding: 1.25rem 1rem;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+}
+
+/* Phase number styling */
+.phase-number {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  color: var(--color-teal);
+}
+
+/* Form elements */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(14, 178, 205, 0.06);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-white-95);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-teal);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-white-30);
+}
+
+select option {
+  background: var(--color-navy-light);
+  color: var(--color-white-85);
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  color: var(--color-white-60);
+  margin-bottom: 6px;
+}
+
+/* Selection cards (radio-like) */
+.selection-card {
+  padding: 14px 18px;
+  background: rgba(14, 178, 205, 0.04);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selection-card:hover {
+  border-color: var(--color-border);
+  background: var(--color-teal-glow);
+}
+
+.selection-card.selected {
+  border-color: var(--color-teal);
+  background: var(--color-teal-dim);
+}
+
+/* Loading / generating state */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.generating {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-deep-teal);
+  border-radius: 3px;
+}
