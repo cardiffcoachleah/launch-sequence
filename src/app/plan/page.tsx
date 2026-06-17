@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
+import { createClient } from "@/lib/supabase/client";
 
 interface PlanAction {
   title: string;
@@ -64,6 +65,9 @@ export default function PlanPage() {
   const router = useRouter();
   const [plan, setPlan] = useState<Plan | null>(null);
   const [activePhase, setActivePhase] = useState<keyof Plan>("t10");
+  const [saveEmail, setSaveEmail] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("launchsequence_plan");
@@ -76,7 +80,37 @@ export default function PlanPage() {
     } else {
       router.push("/briefing");
     }
+
+    // Check if already logged in
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setIsLoggedIn(true);
+    });
   }, [router]);
+
+  async function handleSavePlan() {
+    if (!saveEmail.trim() || !plan) return;
+    setSaveStatus("sending");
+
+    const supabase = createClient();
+
+    // Send magic link
+    const { error } = await supabase.auth.signInWithOtp({
+      email: saveEmail.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    if (error) {
+      setSaveStatus("error");
+      return;
+    }
+
+    // Save plan data to sessionStorage so auth callback can persist it
+    // (The dashboard will read from sessionStorage on first load and save to Supabase)
+    setSaveStatus("sent");
+  }
 
   if (!plan) {
     return (
@@ -94,6 +128,66 @@ export default function PlanPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
+
+      {/* Save banner — shown until logged in or sent */}
+      {!isLoggedIn && saveStatus !== "sent" && (
+        <div style={{
+          background: "rgba(14,178,205,0.06)",
+          borderBottom: "1px solid rgba(14,178,205,0.2)",
+          padding: "12px 32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "16px",
+          flexWrap: "wrap",
+        }}>
+          <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", margin: 0 }}>
+            Your plan is ready. Save it so you can come back any time.
+          </p>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexShrink: 0 }}>
+            <input
+              type="email"
+              value={saveEmail}
+              onChange={(e) => setSaveEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSavePlan()}
+              placeholder="your@email.com"
+              style={{ width: "220px", padding: "8px 12px", fontSize: "13px", marginBottom: 0 }}
+            />
+            <button
+              onClick={handleSavePlan}
+              disabled={!saveEmail.trim() || saveStatus === "sending"}
+              className="btn-primary"
+              style={{ padding: "8px 16px", fontSize: "13px" }}
+            >
+              {saveStatus === "sending" ? "Sending..." : "Save plan"}
+            </button>
+          </div>
+          {saveStatus === "error" && (
+            <p style={{ fontSize: "13px", color: "var(--color-amber)", margin: 0, width: "100%" }}>
+              Something went wrong. Check the email address and try again.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Sent confirmation */}
+      {saveStatus === "sent" && (
+        <div style={{
+          background: "rgba(106,232,164,0.06)",
+          borderBottom: "1px solid rgba(106,232,164,0.2)",
+          padding: "12px 32px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-mint)", flexShrink: 0 }} aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <p style={{ fontSize: "13px", color: "var(--color-mint)", margin: 0 }}>
+            Check your email for a sign-in link. Click it to save your plan and access your mission dashboard.
+          </p>
+        </div>
+      )}
 
       <div style={{ flex: 1, display: "flex" }}>
 
