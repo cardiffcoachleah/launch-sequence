@@ -103,16 +103,19 @@ p {
 
 .back-link {
   font-size: 14px;
-  color: var(--color-text-minimum);
+  color: var(--color-text-tertiary);
   background: none;
   border: none;
   cursor: pointer;
   transition: color 0.2s ease;
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .back-link:hover {
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 /* ============================================
