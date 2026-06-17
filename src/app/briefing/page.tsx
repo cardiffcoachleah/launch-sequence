@@ -51,6 +51,7 @@ const STEPS = [
       { value: "SVP / EVP", description: "" },
       { value: "C-suite (CTO, CPO, CMO, etc.)", description: "" },
       { value: "General Manager", description: "" },
+      { value: "Founder / CEO", description: "" },
       { value: "Other", description: "" },
     ],
     field: "level" as keyof BriefingData,
@@ -131,23 +132,22 @@ const STEPS = [
   },
   {
     id: "team_size",
-    label: "How large is your org / team?",
+    label: "How large is your org?",
     sublabel: "Direct and indirect reports combined.",
     type: "cards" as const,
     options: [
       { value: "Solo (just me for now)", description: "" },
-      { value: "Small (2-5 people)", description: "" },
-      { value: "Medium (6-20 people)", description: "" },
-      { value: "Large (21-50 people)", description: "" },
-      { value: "Very large (50+)", description: "" },
+      { value: "Small (2 to 5 people)", description: "" },
+      { value: "Medium (6 to 20 people)", description: "" },
+      { value: "Large (21 to 50 people)", description: "" },
+      { value: "Very large (50+ people)", description: "" },
     ],
     field: "team_size" as keyof BriefingData,
   },
   {
     id: "start_date",
     label: "When do you start?",
-    sublabel:
-      "This anchors your T-10 pre-launch countdown and your 90-day timeline.",
+    sublabel: "This anchors your T-10 pre-launch countdown and your 90-day timeline.",
     type: "date" as const,
     field: "start_date" as keyof BriefingData,
   },
@@ -168,7 +168,7 @@ const STEPS = [
       "If you could fast-forward, what would make you feel like you landed well?",
     type: "textarea" as const,
     placeholder:
-      "e.g., I want to have a clear product strategy that the team believes in, strong relationships with my peers, and at least one visible win...",
+      "e.g., I want to have a clear strategy that the team believes in, strong relationships with my peers, and at least one visible win...",
     field: "what_success_looks_like" as keyof BriefingData,
   },
 ];
@@ -208,7 +208,6 @@ export default function BriefingPage() {
           body: JSON.stringify(data),
         });
         const result = await res.json();
-        // Store plan in sessionStorage for the plan page to read
         sessionStorage.setItem("launchsequence_plan", JSON.stringify(result));
         sessionStorage.setItem("launchsequence_briefing", JSON.stringify(data));
         router.push("/plan");
@@ -226,11 +225,9 @@ export default function BriefingPage() {
       <div className="min-h-screen flex flex-col">
         <Nav />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md">
-            <div className="instrument text-[var(--color-teal)] generating text-lg mb-4">
-              Generating your flight plan...
-            </div>
-            <p className="text-sm text-[var(--color-white-45)]">
+          <div className="text-center max-w-md px-6">
+            <div className="generating mb-4">Generating your flight plan...</div>
+            <p style={{ color: "var(--color-text-tertiary)", fontSize: "14px" }}>
               Analyzing your mission parameters and building a personalized
               transition plan. This takes about 15 seconds.
             </p>
@@ -245,89 +242,88 @@ export default function BriefingPage() {
       <Nav />
 
       {/* Progress bar */}
-      <div className="h-[2px] bg-[var(--color-border-subtle)]">
-        <div
-          className="h-full bg-[var(--color-teal)] transition-all duration-500 ease-out"
-          style={{ width: `${progress}%` }}
-        />
+      <div className="progress-track">
+        <div className="progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6">
+      <div className="flex-1 flex items-center justify-center px-6 py-10">
         <div className="w-full max-w-lg">
+
           {/* Step counter */}
-          <div className="instrument text-xs text-[var(--color-white-30)] mb-6">
+          <div className="step-counter mb-6">
             {String(step + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
           </div>
 
           {/* Question */}
-          <h2 className="text-2xl mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+          <h2 style={{ fontSize: "1.75rem", marginBottom: "8px" }}>
             {currentStep.label}
           </h2>
-          <p className="text-sm text-[var(--color-white-45)] mb-8">
+          <p style={{ fontSize: "14px", color: "var(--color-text-tertiary)", marginBottom: "32px" }}>
             {currentStep.sublabel}
           </p>
 
-          {/* Input based on type */}
+          {/* Select */}
           {currentStep.type === "select" && (
             <select
               value={data[currentStep.field]}
               onChange={(e) => updateField(e.target.value)}
-              className="mb-8"
+              style={{ marginBottom: "32px" }}
             >
               <option value="">Select one...</option>
-              {currentStep.options.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
+              {(currentStep.options as string[]).map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
           )}
 
+          {/* Cards */}
           {currentStep.type === "cards" && (
-            <div className="grid gap-2 mb-8">
-              {currentStep.options.map((opt) => (
+            <div style={{ display: "grid", gap: "8px", marginBottom: "32px" }}>
+              {(currentStep.options as { value: string; description: string }[]).map((opt) => (
                 <div
                   key={opt.value}
                   className={`selection-card ${data[currentStep.field] === opt.value ? "selected" : ""}`}
                   onClick={() => updateField(opt.value)}
+                  role="radio"
+                  aria-checked={data[currentStep.field] === opt.value}
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && updateField(opt.value)}
                 >
-                  <div className="text-sm font-medium text-[var(--color-white-95)]">
-                    {opt.value}
-                  </div>
+                  <div className="card-title">{opt.value}</div>
                   {opt.description && (
-                    <div className="text-xs text-[var(--color-white-45)] mt-1">
-                      {opt.description}
-                    </div>
+                    <div className="card-desc">{opt.description}</div>
                   )}
                 </div>
               ))}
             </div>
           )}
 
+          {/* Date */}
           {currentStep.type === "date" && (
             <input
               type="date"
               value={data[currentStep.field]}
               onChange={(e) => updateField(e.target.value)}
-              className="mb-8"
+              style={{ marginBottom: "32px" }}
             />
           )}
 
+          {/* Textarea */}
           {currentStep.type === "textarea" && (
             <textarea
               value={data[currentStep.field]}
               onChange={(e) => updateField(e.target.value)}
-              placeholder={currentStep.placeholder}
-              rows={4}
-              className="mb-8 resize-none"
+              placeholder={"placeholder" in currentStep ? currentStep.placeholder : ""}
+              rows={5}
+              style={{ marginBottom: "32px", resize: "none" }}
             />
           )}
 
           {/* Navigation */}
-          <div className="flex items-center justify-between">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
               onClick={() => setStep((s) => Math.max(0, s - 1))}
-              className="text-sm text-[var(--color-white-30)] hover:text-[var(--color-white-60)] transition-colors"
+              className="back-link"
               style={{ visibility: step === 0 ? "hidden" : "visible" }}
             >
               Back
@@ -335,11 +331,12 @@ export default function BriefingPage() {
             <button
               onClick={handleNext}
               disabled={!canProceed}
-              className="btn-primary disabled:opacity-30 disabled:cursor-not-allowed"
+              className="btn-primary"
             >
               {isLastStep ? "Generate flight plan" : "Continue"}
             </button>
           </div>
+
         </div>
       </div>
     </div>
