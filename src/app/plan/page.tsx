@@ -67,6 +67,7 @@ export default function PlanPage() {
   const [activePhase, setActivePhase] = useState<keyof Plan>("t10");
   const [saveEmail, setSaveEmail] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [saveError, setSaveError] = useState<string>("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -94,7 +95,6 @@ export default function PlanPage() {
 
     const supabase = createClient();
 
-    // Send magic link
     const { error } = await supabase.auth.signInWithOtp({
       email: saveEmail.trim(),
       options: {
@@ -103,12 +103,12 @@ export default function PlanPage() {
     });
 
     if (error) {
+      console.error("Supabase OTP error:", error.message, error.status, error);
       setSaveStatus("error");
+      setSaveError(error.message);
       return;
     }
 
-    // Save plan data to sessionStorage so auth callback can persist it
-    // (The dashboard will read from sessionStorage on first load and save to Supabase)
     setSaveStatus("sent");
   }
 
@@ -164,7 +164,7 @@ export default function PlanPage() {
           </div>
           {saveStatus === "error" && (
             <p style={{ fontSize: "13px", color: "var(--color-amber)", margin: 0, width: "100%" }}>
-              Something went wrong. Check the email address and try again.
+              {saveError || "Something went wrong. Check the email address and try again."}
             </p>
           )}
         </div>
