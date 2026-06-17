@@ -181,6 +181,7 @@ export default function BriefingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<BriefingData>({
     function_area: "",
     level: "",
@@ -205,6 +206,7 @@ export default function BriefingPage() {
   async function handleNext() {
     if (isLastStep) {
       setIsGenerating(true);
+      setError(null);
       try {
         const res = await fetch("/api/generate-plan", {
           method: "POST",
@@ -212,12 +214,16 @@ export default function BriefingPage() {
           body: JSON.stringify(data),
         });
         const result = await res.json();
+        if (!res.ok || result.error) {
+          throw new Error(result.error || `Server error ${res.status}`);
+        }
         sessionStorage.setItem("launchsequence_plan", JSON.stringify(result));
         sessionStorage.setItem("launchsequence_briefing", JSON.stringify(data));
         router.push("/plan");
       } catch (err) {
         console.error("Plan generation failed:", err);
         setIsGenerating(false);
+        setError("Something went wrong generating your plan. Please try again.");
       }
     } else {
       setStep((s) => s + 1);
@@ -321,6 +327,21 @@ export default function BriefingPage() {
               rows={5}
               style={{ marginBottom: "32px", resize: "none" }}
             />
+          )}
+
+          {/* Error message */}
+          {error && (
+            <div style={{
+              marginBottom: "20px",
+              padding: "12px 16px",
+              background: "rgba(245, 166, 35, 0.08)",
+              border: "1px solid rgba(245, 166, 35, 0.35)",
+              borderRadius: "var(--radius)",
+              fontSize: "14px",
+              color: "var(--color-amber)",
+            }}>
+              {error}
+            </div>
           )}
 
           {/* Navigation */}
