@@ -24,11 +24,31 @@ interface Plan {
   act: PlanPhase;
 }
 
-const categoryStyles: Record<string, { color: string; label: string }> = {
-  relationships: { color: "var(--color-teal)", label: "Relationships" },
-  strategy:      { color: "var(--color-mint)", label: "Strategy" },
-  self:          { color: "var(--color-amber)", label: "Self" },
-  logistics:     { color: "var(--color-text-tertiary)", label: "Logistics" },
+const categoryStyles: Record<string, { color: string; label: string; bg: string; border: string }> = {
+  relationships: {
+    color: "var(--color-teal)",
+    label: "Relationships",
+    bg: "rgba(14, 178, 205, 0.08)",
+    border: "rgba(14, 178, 205, 0.25)",
+  },
+  strategy: {
+    color: "var(--color-mint)",
+    label: "Strategy",
+    bg: "rgba(106, 232, 164, 0.08)",
+    border: "rgba(106, 232, 164, 0.25)",
+  },
+  self: {
+    color: "var(--color-amber)",
+    label: "Self",
+    bg: "rgba(245, 166, 35, 0.08)",
+    border: "rgba(245, 166, 35, 0.25)",
+  },
+  logistics: {
+    color: "rgba(255,255,255,0.55)",
+    label: "Logistics",
+    bg: "rgba(255, 255, 255, 0.03)",
+    border: "rgba(255, 255, 255, 0.1)",
+  },
 };
 
 const phaseKeys: (keyof Plan)[] = ["t10", "observe", "orient", "act"];
@@ -141,7 +161,12 @@ export default function PlanPage() {
             {phase.actions.map((action, i) => {
               const cat = categoryStyles[action.category] || categoryStyles.logistics;
               return (
-                <div key={i} className="card">
+                <div key={i} style={{
+                  background: cat.bg,
+                  border: `1px solid ${cat.border}`,
+                  borderRadius: "var(--radius)",
+                  padding: "1.1rem 1rem",
+                }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
                     <div style={{
                       width: "8px",
