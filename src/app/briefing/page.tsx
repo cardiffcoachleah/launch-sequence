@@ -7,9 +7,12 @@ import Nav from "@/components/Nav";
 interface BriefingData {
   function_area: string;
   transition_type: string;
+  seniority_change: string;
   level: string;
   company_stage: string;
+  company_stage_detail: string;
   team_situation: string;
+  team_situation_detail: string;
   reporting_to: string;
   team_size: string;
   start_date: string;
@@ -37,6 +40,7 @@ const STEPS = [
       { value: "Other", description: "" },
     ],
     field: "function_area" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "transition_type",
@@ -46,7 +50,7 @@ const STEPS = [
     options: [
       {
         value: "Joining a new company",
-        description: "You are starting fresh somewhere new. Clean slate, new culture, everything to learn.",
+        description: "Starting fresh somewhere new. Clean slate, new culture, everything to learn.",
       },
       {
         value: "Promotion or internal move",
@@ -58,6 +62,30 @@ const STEPS = [
       },
     ],
     field: "transition_type" as keyof BriefingData,
+    showAlways: true,
+  },
+  {
+    id: "seniority_change",
+    label: "Is this a step up or a lateral move?",
+    sublabelFn: (data: BriefingData) =>
+      data.transition_type === "Promotion or internal move"
+        ? "Knowing whether you are moving up a level or across at the same level changes what we will tell you to focus on."
+        : "Taking on more seniority at a new company is a double transition — new culture and new altitude at the same time. We need to know.",
+    type: "cards" as const,
+    options: [
+      {
+        value: "Stepping up — this is a more senior role than my last one",
+        description: "More scope, more visibility, higher stakes. You are operating at a new altitude.",
+      },
+      {
+        value: "Lateral — similar level to my previous role",
+        description: "Same seniority, different context. You are applying proven skills in a new environment.",
+      },
+    ],
+    field: "seniority_change" as keyof BriefingData,
+    showWhen: (data: BriefingData) =>
+      data.transition_type === "Joining a new company" ||
+      data.transition_type === "Promotion or internal move",
   },
   {
     id: "level",
@@ -65,7 +93,10 @@ const STEPS = [
     sublabel: "This helps us calibrate the scope and stakes of your transition.",
     type: "cards" as const,
     options: [
-      { value: "Manager / Lead", description: "" },
+      { value: "IC — Junior (early career, 0 to 3 years)", description: "" },
+      { value: "IC — Mid-level (3 to 7 years)", description: "" },
+      { value: "IC — Senior / Staff / Principal", description: "" },
+      { value: "Manager / Lead (first-time or returning people manager)", description: "" },
       { value: "Senior Manager", description: "" },
       { value: "Director", description: "" },
       { value: "Senior Director", description: "" },
@@ -74,9 +105,9 @@ const STEPS = [
       { value: "C-suite (CTO, CPO, CMO, etc.)", description: "" },
       { value: "General Manager", description: "" },
       { value: "Founder / CEO", description: "" },
-      { value: "Other", description: "" },
     ],
     field: "level" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "company_stage",
@@ -92,6 +123,16 @@ const STEPS = [
       { value: "Post-acquisition or merger", description: "Two worlds colliding. Your job is to make sense of the overlap." },
     ],
     field: "company_stage" as keyof BriefingData,
+    showAlways: true,
+  },
+  {
+    id: "company_stage_detail",
+    label: "Anything else about the company we should know?",
+    sublabel: "Optional — but the more context you give us, the more specific your plan will be. Skip if nothing comes to mind.",
+    type: "textarea-optional" as const,
+    placeholder: "e.g., The company just raised a Series B and is under pressure to hit aggressive growth targets. The team is distributed across 3 time zones...",
+    field: "company_stage_detail" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "team_situation",
@@ -103,9 +144,19 @@ const STEPS = [
       { value: "Inheriting an existing team", description: "People are in place. You need to learn them and earn trust." },
       { value: "Former peers are now my direct reports", description: "You have been promoted above people you worked alongside. One of the hardest transitions there is." },
       { value: "Restructuring", description: "The team exists but needs reshaping. Hard conversations ahead." },
-      { value: "Joining as a peer leader (no direct reports)", description: "You are not managing a team directly. Influence over authority." },
+      { value: "No direct reports (IC or peer leader)", description: "You are not managing a team directly. Influence over authority." },
     ],
     field: "team_situation" as keyof BriefingData,
+    showAlways: true,
+  },
+  {
+    id: "team_situation_detail",
+    label: "Anything else about the team situation we should know?",
+    sublabel: "Optional — team dynamics are often where transitions succeed or fail. Any context helps.",
+    type: "textarea-optional" as const,
+    placeholder: "e.g., Two of my direct reports applied for my role and did not get it. The team has been through three managers in two years...",
+    field: "team_situation_detail" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "reporting_to",
@@ -126,20 +177,22 @@ const STEPS = [
       "Other",
     ],
     field: "reporting_to" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "team_size",
-    label: "How large is your org?",
-    sublabel: "Direct and indirect reports combined.",
+    label: "How large is your org relative to the company?",
+    sublabel: "We ask it this way because 50 people at a startup is enormous, while 50 people at a large enterprise is a normal mid-size team.",
     type: "cards" as const,
     options: [
-      { value: "Solo (just me for now)", description: "" },
-      { value: "Small (2 to 5 people)", description: "" },
-      { value: "Medium (6 to 20 people)", description: "" },
-      { value: "Large (21 to 50 people)", description: "" },
-      { value: "Very large (50+ people)", description: "" },
+      { value: "Just me — no team yet", description: "" },
+      { value: "Small relative to the company (2 to 5 people)", description: "" },
+      { value: "Average size for this company", description: "" },
+      { value: "Larger than most teams here", description: "" },
+      { value: "One of the largest orgs in the company", description: "" },
     ],
     field: "team_size" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "start_date",
@@ -147,6 +200,7 @@ const STEPS = [
     sublabel: "This anchors your T-10 pre-launch countdown and your 90-day timeline.",
     type: "date" as const,
     field: "start_date" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "biggest_concern",
@@ -155,6 +209,7 @@ const STEPS = [
     type: "textarea" as const,
     placeholder: "e.g., I have never managed a team this large before. I am worried about earning credibility with people who have been there longer than me...",
     field: "biggest_concern" as keyof BriefingData,
+    showAlways: true,
   },
   {
     id: "what_success_looks_like",
@@ -163,6 +218,7 @@ const STEPS = [
     type: "textarea" as const,
     placeholder: "e.g., I want to have a clear strategy that the team believes in, strong relationships with my peers, and at least one visible win...",
     field: "what_success_looks_like" as keyof BriefingData,
+    showAlways: true,
   },
 ];
 
@@ -174,9 +230,12 @@ export default function BriefingPage() {
   const [data, setData] = useState<BriefingData>({
     function_area: "",
     transition_type: "",
+    seniority_change: "",
     level: "",
     company_stage: "",
+    company_stage_detail: "",
     team_situation: "",
+    team_situation_detail: "",
     reporting_to: "",
     team_size: "",
     start_date: "",
@@ -184,13 +243,32 @@ export default function BriefingPage() {
     what_success_looks_like: "",
   });
 
-  const currentStep = STEPS[step];
-  const isLastStep = step === STEPS.length - 1;
-  const canProceed = data[currentStep.field]?.trim().length > 0;
-  const progress = ((step + 1) / STEPS.length) * 100;
+  // Filter steps based on showWhen conditions
+  const visibleSteps = STEPS.filter((s) => {
+    if ("showAlways" in s && s.showAlways) return true;
+    if ("showWhen" in s && s.showWhen) return s.showWhen(data);
+    return true;
+  });
+
+  const currentStep = visibleSteps[step];
+  const isLastStep = step === visibleSteps.length - 1;
+  const isOptional = currentStep.type === "textarea-optional";
+  const canProceed = isOptional || data[currentStep.field]?.trim().length > 0;
+  const progress = ((step + 1) / visibleSteps.length) * 100;
+
+  // Get sublabel — either static string or function
+  const sublabel = "sublabelFn" in currentStep
+    ? currentStep.sublabelFn(data)
+    : currentStep.sublabel;
 
   function updateField(value: string) {
     setData((prev) => ({ ...prev, [currentStep.field]: value }));
+  }
+
+  function handleBack() {
+    if (step === 0) return;
+    // Step back through visible steps
+    setStep((s) => Math.max(0, s - 1));
   }
 
   async function handleNext() {
@@ -207,7 +285,6 @@ export default function BriefingPage() {
         if (!res.ok || result.error) {
           throw new Error(result.error || `Server error ${res.status}`);
         }
-        // Use localStorage so data survives across tabs when magic link opens
         localStorage.setItem("launchsequence_plan", JSON.stringify(result));
         localStorage.setItem("launchsequence_briefing", JSON.stringify(data));
         router.push("/plan");
@@ -248,12 +325,15 @@ export default function BriefingPage() {
         <div className="w-full max-w-lg">
 
           <div className="step-counter mb-6">
-            {String(step + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+            {String(step + 1).padStart(2, "0")} / {String(visibleSteps.length).padStart(2, "0")}
           </div>
 
           <h2 style={{ fontSize: "1.75rem", marginBottom: "8px" }}>{currentStep.label}</h2>
           <p style={{ fontSize: "14px", color: "var(--color-text-tertiary)", marginBottom: "32px" }}>
-            {currentStep.sublabel}
+            {sublabel}
+            {isOptional && (
+              <span style={{ color: "var(--color-text-minimum)", marginLeft: "6px" }}>(optional)</span>
+            )}
           </p>
 
           {/* Select */}
@@ -303,13 +383,24 @@ export default function BriefingPage() {
             <input type="date" value={data[currentStep.field]} onChange={(e) => updateField(e.target.value)} style={{ marginBottom: "32px" }} />
           )}
 
-          {/* Textarea */}
+          {/* Textarea (required) */}
           {currentStep.type === "textarea" && (
             <textarea
               value={data[currentStep.field]}
               onChange={(e) => updateField(e.target.value)}
               placeholder={"placeholder" in currentStep ? currentStep.placeholder : ""}
               rows={5}
+              style={{ marginBottom: "32px", resize: "none" }}
+            />
+          )}
+
+          {/* Textarea (optional) */}
+          {currentStep.type === "textarea-optional" && (
+            <textarea
+              value={data[currentStep.field]}
+              onChange={(e) => updateField(e.target.value)}
+              placeholder={"placeholder" in currentStep ? currentStep.placeholder : ""}
+              rows={4}
               style={{ marginBottom: "32px", resize: "none" }}
             />
           )}
@@ -322,7 +413,7 @@ export default function BriefingPage() {
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
-              onClick={() => setStep((s) => Math.max(0, s - 1))}
+              onClick={handleBack}
               className="back-link"
               style={{ visibility: step === 0 ? "hidden" : "visible", display: "flex", alignItems: "center", gap: "6px" }}
             >
@@ -332,7 +423,7 @@ export default function BriefingPage() {
               Back
             </button>
             <button onClick={handleNext} disabled={!canProceed} className="btn-primary">
-              {isLastStep ? "Generate flight plan" : "Continue"}
+              {isLastStep ? "Generate flight plan" : isOptional && !data[currentStep.field] ? "Skip" : "Continue"}
             </button>
           </div>
 
