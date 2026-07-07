@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Nav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
@@ -14,6 +16,14 @@ export default function Nav() {
       setIsLoggedIn(!!user);
     });
   }, []);
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    localStorage.removeItem("launchsequence_plan");
+    localStorage.removeItem("launchsequence_briefing");
+    router.push("/");
+  }
 
   return (
     <nav style={{
@@ -41,9 +51,14 @@ export default function Nav() {
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <ThemeToggle />
         {isLoggedIn ? (
-          <Link href="/dashboard" className="btn-primary" style={{ fontSize: "14px" }}>
-            My mission
-          </Link>
+          <>
+            <Link href="/dashboard" style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
+              My mission
+            </Link>
+            <button onClick={handleSignOut} className="back-link" style={{ fontSize: "13px" }}>
+              Sign out
+            </button>
+          </>
         ) : (
           <>
             <Link href="/login" style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
