@@ -65,7 +65,6 @@ export default function Home() {
     <div className="min-h-screen">
       <Nav />
 
-      {/* Hero */}
       <section style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center", padding: "5rem 1.5rem 4rem" }}>
         <p className="eyebrow" style={{ marginBottom: "1.5rem" }}>For leaders in transition</p>
         <h1 className="heading-display" style={{ fontSize: "2.8rem", marginBottom: "1.5rem" }}>
@@ -77,87 +76,54 @@ export default function Home() {
           A personalized transition companion for leaders stepping into something new. New job, promotion, or career pivot. From T-10 to stable orbit.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-          <Link href="/briefing" className="btn-primary">
-            Begin mission briefing
-          </Link>
-          <a href="#phases" className="btn-secondary">
-            See how it works
-          </a>
+          <Link href="/briefing" className="btn-primary">Begin mission briefing</Link>
+          <a href="#phases" className="btn-secondary">See how it works</a>
         </div>
       </section>
 
-      <div style={{ padding: "0 2rem" }}>
-        <div className="divider" />
-      </div>
+      <div style={{ padding: "0 2rem" }}><div className="divider" /></div>
 
-      {/* Phases */}
       <section id="phases" style={{ padding: "2.5rem 2rem" }}>
         <p className="eyebrow" style={{ textAlign: "center", marginBottom: "2rem" }}>Mission phases</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", maxWidth: "900px", margin: "0 auto" }}>
           {phases.map((phase) => (
             <div key={phase.number} className="card">
               <div className="phase-number" style={{ marginBottom: "8px" }}>{phase.number}</div>
-              <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "6px" }}>
-                {phase.title}
-              </div>
-              <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>
-                {phase.description}
-              </div>
+              <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "6px" }}>{phase.title}</div>
+              <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{phase.description}</div>
             </div>
           ))}
         </div>
       </section>
 
-      <div style={{ padding: "0 2rem" }}>
-        <div className="divider" />
-      </div>
+      <div style={{ padding: "0 2rem" }}><div className="divider" /></div>
 
-      {/* Systems */}
       <section style={{ padding: "2.5rem 2rem" }}>
         <p className="eyebrow" style={{ textAlign: "center", marginBottom: "2rem" }}>Onboard systems</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", maxWidth: "800px", margin: "0 auto" }}>
           {systems.map((system) => {
-            const iconColor =
-              system.color === "teal" ? "var(--color-teal)"
-              : system.color === "amber" ? "var(--color-amber)"
-              : "var(--color-mint)";
-            const borderColor =
-              system.color === "teal" ? "rgba(14,178,205,0.3)"
-              : system.color === "amber" ? "rgba(245,166,35,0.3)"
-              : "rgba(106,232,164,0.3)";
+            const iconColor = system.color === "teal" ? "var(--color-teal)" : system.color === "amber" ? "var(--color-amber)" : "var(--color-mint)";
+            const borderColor = system.color === "teal" ? "rgba(14,178,205,0.3)" : system.color === "amber" ? "rgba(245,166,35,0.3)" : "rgba(106,232,164,0.3)";
             return (
               <div key={system.title} style={{ textAlign: "center", padding: "1.25rem 1rem" }}>
-                <div style={{
-                  width: "40px", height: "40px", borderRadius: "50%",
-                  border: `1px solid ${borderColor}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  margin: "0 auto 12px",
-                  color: iconColor,
-                }}>
+                <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: `1px solid ${borderColor}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", color: iconColor }}>
                   {system.icon}
                 </div>
-                <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "4px" }}>
-                  {system.title}
-                </div>
-                <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>
-                  {system.description}
-                </div>
+                <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "4px" }}>{system.title}</div>
+                <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{system.description}</div>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* Footer */}
       <footer style={{ textAlign: "center", padding: "2rem", borderTop: "1px solid var(--color-border-subtle)" }}>
         <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 300, fontStyle: "italic", color: "var(--color-text-tertiary)", marginBottom: "8px" }}>
           Built by a coach who has lived this transition six times.
         </p>
         <p style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>
           A project by Leah Farmer &middot;{" "}
-          <a href="https://leahfarmer.com" style={{ color: "var(--color-text-minimum)" }}>
-            leahfarmer.com
-          </a>
+          <a href="https://leahfarmer.com" style={{ color: "var(--color-text-minimum)" }}>leahfarmer.com</a>
         </p>
       </footer>
     </div>
