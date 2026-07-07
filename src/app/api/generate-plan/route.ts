@@ -120,6 +120,7 @@ TEAM SITUATION: ${briefing.team_situation}
 ${briefing.team_situation_detail ? `ADDITIONAL TEAM CONTEXT: ${briefing.team_situation_detail}` : ""}
 REPORTS TO: ${briefing.reporting_to}
 TEAM SIZE (relative to company): ${briefing.team_size}
+${briefing.team_size_detail ? `ADDITIONAL ORG CONTEXT: ${briefing.team_size_detail}` : ""}
 START DATE: ${briefing.start_date}
 BIGGEST CONCERN: ${briefing.biggest_concern}
 WHAT SUCCESS LOOKS LIKE AT 90 DAYS: ${briefing.what_success_looks_like}
