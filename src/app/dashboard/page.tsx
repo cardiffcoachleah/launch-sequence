@@ -134,7 +134,8 @@ export default function DashboardPage() {
         .single();
 
       if (!briefingRow) {
-        router.push("/briefing");
+        // No plan yet — show the dashboard with a CTA to start, don't redirect
+        setLoading(false);
         return;
       }
 
