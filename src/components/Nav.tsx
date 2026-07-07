@@ -52,7 +52,7 @@ export default function Nav() {
         <ThemeToggle />
         {isLoggedIn ? (
           <>
-            <Link href="/dashboard" style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
+            <Link href="/dashboard" className="btn-primary" style={{ fontSize: "14px" }}>
               My mission
             </Link>
             <button onClick={handleSignOut} className="back-link" style={{ fontSize: "13px" }}>
