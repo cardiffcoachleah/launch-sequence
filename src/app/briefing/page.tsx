@@ -207,8 +207,9 @@ export default function BriefingPage() {
         if (!res.ok || result.error) {
           throw new Error(result.error || `Server error ${res.status}`);
         }
-        sessionStorage.setItem("launchsequence_plan", JSON.stringify(result));
-        sessionStorage.setItem("launchsequence_briefing", JSON.stringify(data));
+        // Use localStorage so data survives across tabs when magic link opens
+        localStorage.setItem("launchsequence_plan", JSON.stringify(result));
+        localStorage.setItem("launchsequence_briefing", JSON.stringify(data));
         router.push("/plan");
       } catch (err) {
         console.error("Plan generation failed:", err);
