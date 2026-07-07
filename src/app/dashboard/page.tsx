@@ -104,6 +104,7 @@ export default function DashboardPage() {
                 team_situation_detail: briefingData.team_situation_detail,
                 reporting_to: briefingData.reporting_to,
                 team_size: briefingData.team_size,
+                team_size_detail: briefingData.team_size_detail,
                 start_date: briefingData.start_date,
                 biggest_concern: briefingData.biggest_concern,
                 what_success_looks_like: briefingData.what_success_looks_like,
