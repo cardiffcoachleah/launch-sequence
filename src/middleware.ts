@@ -26,15 +26,24 @@ export async function middleware(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
+  const path = request.nextUrl.pathname;
 
-  // Protect dashboard route
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  // Redirect logged-in users away from login page to dashboard
+  if (user && path === "/login") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // Protect dashboard — redirect to login if not authenticated
+  if (!user && path.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Never redirect the home page — let it render regardless of auth state
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
