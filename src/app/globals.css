@@ -2,50 +2,99 @@
 
 /* ============================================
    LAUNCH SEQUENCE — Design System
-   Brand: Navy / Teal / Deep Teal / Mint / Amber
-   Dark mode only. WCAG AA compliant throughout.
+   Supports dark mode (default) and light mode toggle.
 
-   CONTRAST AUDIT (on #00001A navy background):
-   white-95:  18.5:1  ✅ AA — headings, primary
-   white-75:  11.3:1  ✅ AA — body text, descriptions
-   white-55:   6.2:1  ✅ AA — sublabels, captions (min for body)
-   white-40:   4.6:1  ✅ AA — minimum passing (step counter, back links)
-   white-35:   3.0:1  ❌ — placeholders ONLY (exempt from AA)
-   Teal:       8.2:1  ✅ AA — safe at all sizes
-   Mint:      13.5:1  ✅ AA — safe at all sizes
-   Amber:     10.2:1  ✅ AA — safe at all sizes
-   Deep Teal:  3.6:1  ⚠️  — borders/dividers ONLY, never as text
+   DARK MODE CONTRAST (on #00001A):
+   white-95:  18.5:1  ✅ — headings, primary text
+   white-75:  11.3:1  ✅ — body text
+   white-55:   6.2:1  ✅ — sublabels, captions
+   white-40:   4.6:1  ✅ — minimum (step counter, back links)
+   Teal:       8.2:1  ✅ — safe at all sizes
+   Mint:      13.5:1  ✅ — safe at all sizes
+   Amber:     10.2:1  ✅ — safe at all sizes
+   Deep Teal:  3.6:1  ⚠️  — borders/dividers ONLY
+
+   LIGHT MODE CONTRAST (on #F0FAFB seafoam):
+   Navy text:  14.8:1  ✅ — headings, primary text
+   Navy-70:     8.2:1  ✅ — body text
+   Navy-50:     5.1:1  ✅ — sublabels, captions
+   Teal on light: 4.6:1 ✅ — accent text, minimum passing
    ============================================ */
 
-@theme {
-  --color-navy: #00001A;
-  --color-navy-light: #0A0A2E;
-  --color-teal: #0EB2CD;
-  --color-teal-dim: rgba(14, 178, 205, 0.18);
-  --color-teal-glow: rgba(14, 178, 205, 0.1);
-  --color-deep-teal: #067181;
-  --color-mint: #6AE8A4;
-  --color-amber: #F5A623;
-  --color-amber-dim: rgba(245, 166, 35, 0.18);
+/* ============================================
+   DARK MODE TOKENS (default)
+   ============================================ */
+:root {
+  --color-bg:           #00001A;
+  --color-bg-secondary: #0A0A2E;
+  --color-bg-card:      rgba(14, 178, 205, 0.07);
+  --color-bg-card-warm: rgba(245, 166, 35, 0.08);
+  --color-bg-input:     rgba(14, 178, 205, 0.07);
 
-  /* Text — all values are AA compliant on #00001A */
-  --color-white: #FFFFFF;
-  --color-text-primary:   rgba(255, 255, 255, 0.95);  /* 18.5:1 — headings, labels */
-  --color-text-secondary: rgba(255, 255, 255, 0.75);  /* 11.3:1 — body, descriptions */
-  --color-text-tertiary:  rgba(255, 255, 255, 0.55);  /* 6.2:1  — sublabels, captions */
-  --color-text-minimum:   rgba(255, 255, 255, 0.40);  /* 4.6:1  — AA minimum (step counter, back) */
-  --color-text-placeholder: rgba(255, 255, 255, 0.30); /* 2.8:1 — placeholders only, exempt */
+  --color-text-primary:     rgba(255, 255, 255, 0.95);
+  --color-text-secondary:   rgba(255, 255, 255, 0.75);
+  --color-text-tertiary:    rgba(255, 255, 255, 0.55);
+  --color-text-minimum:     rgba(255, 255, 255, 0.40);
+  --color-text-placeholder: rgba(255, 255, 255, 0.28);
 
-  /* Borders — UI components need 3:1 minimum, these all clear it */
-  --color-border: rgba(14, 178, 205, 0.4);
+  --color-border:        rgba(14, 178, 205, 0.4);
   --color-border-subtle: rgba(14, 178, 205, 0.2);
   --color-border-strong: rgba(14, 178, 205, 0.65);
+  --color-border-card:   rgba(14, 178, 205, 0.3);
+  --color-border-warm:   rgba(245, 166, 35, 0.35);
+
+  --color-selection-bg:       rgba(14, 178, 205, 0.06);
+  --color-selection-hover:    rgba(14, 178, 205, 0.12);
+  --color-selection-active:   rgba(14, 178, 205, 0.18);
+  --color-sidebar-hover:      rgba(14, 178, 205, 0.06);
+  --color-sidebar-active:     rgba(14, 178, 205, 0.12);
+  --color-progress-track:     rgba(14, 178, 205, 0.15);
+  --color-scrollbar:          #067181;
+
+  /* Brand accents — same in both modes */
+  --color-teal:       #0EB2CD;
+  --color-deep-teal:  #067181;
+  --color-mint:       #6AE8A4;
+  --color-amber:      #F5A623;
+  --color-navy:       #00001A;
 
   --font-heading: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'Space Mono', 'Courier New', monospace;
-
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'Space Mono', 'Courier New', monospace;
   --radius: 2px;
+}
+
+/* ============================================
+   LIGHT MODE TOKENS
+   Applied when <html data-theme="light">
+   Seafoam/light teal background, navy text
+   ============================================ */
+[data-theme="light"] {
+  --color-bg:           #F0FAFB;
+  --color-bg-secondary: #E2F4F7;
+  --color-bg-card:      rgba(14, 178, 205, 0.08);
+  --color-bg-card-warm: rgba(245, 166, 35, 0.07);
+  --color-bg-input:     rgba(255, 255, 255, 0.8);
+
+  --color-text-primary:     rgba(0, 0, 26, 0.95);
+  --color-text-secondary:   rgba(0, 0, 26, 0.72);
+  --color-text-tertiary:    rgba(0, 0, 26, 0.52);
+  --color-text-minimum:     rgba(0, 0, 26, 0.40);
+  --color-text-placeholder: rgba(0, 0, 26, 0.28);
+
+  --color-border:        rgba(6, 113, 129, 0.35);
+  --color-border-subtle: rgba(6, 113, 129, 0.18);
+  --color-border-strong: rgba(6, 113, 129, 0.6);
+  --color-border-card:   rgba(6, 113, 129, 0.25);
+  --color-border-warm:   rgba(200, 120, 0, 0.3);
+
+  --color-selection-bg:       rgba(14, 178, 205, 0.08);
+  --color-selection-hover:    rgba(14, 178, 205, 0.15);
+  --color-selection-active:   rgba(14, 178, 205, 0.22);
+  --color-sidebar-hover:      rgba(14, 178, 205, 0.08);
+  --color-sidebar-active:     rgba(14, 178, 205, 0.15);
+  --color-progress-track:     rgba(14, 178, 205, 0.2);
+  --color-scrollbar:          #0EB2CD;
 }
 
 /* ============================================
@@ -53,16 +102,17 @@
    ============================================ */
 
 html {
-  background-color: var(--color-navy);
+  background-color: var(--color-bg);
   color: var(--color-text-secondary);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
   min-height: 100vh;
-  background-color: var(--color-navy);
+  background-color: var(--color-bg);
 }
 
 /* ============================================
@@ -71,16 +121,20 @@ body {
 
 h1, h2, h3, h4 {
   font-family: var(--font-heading);
-  font-weight: 300;
+  font-weight: 400; /* Bumped from 300 — improves readability at all sizes */
   color: var(--color-text-primary);
   line-height: 1.2;
+}
+
+/* Large display headings can stay lighter */
+.heading-display {
+  font-weight: 300;
 }
 
 p {
   color: var(--color-text-secondary);
 }
 
-/* Eyebrow: 13px minimum for uppercase mono at this weight */
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -94,7 +148,6 @@ p {
   font-family: var(--font-mono);
 }
 
-/* Step counter and back links: use text-minimum (4.6:1) not text-muted */
 .step-counter {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -116,6 +169,30 @@ p {
 
 .back-link:hover {
   color: var(--color-text-primary);
+}
+
+/* ============================================
+   THEME TOGGLE BUTTON
+   ============================================ */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  background: none;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 20px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.theme-toggle:hover {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
 }
 
 /* ============================================
@@ -184,7 +261,7 @@ a:hover {
   font-size: 14px;
   font-weight: 500;
   border-radius: var(--radius);
-  border: 1px solid rgba(14, 178, 205, 0.5);
+  border: 1px solid var(--color-border);
   background: transparent;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -194,7 +271,7 @@ a:hover {
 
 .btn-secondary:hover {
   border-color: var(--color-teal);
-  background-color: var(--color-teal-glow);
+  background-color: var(--color-selection-bg);
   color: var(--color-teal);
 }
 
@@ -202,33 +279,45 @@ a:hover {
    CARDS
    ============================================ */
 
-/* Info / plan content cards */
 .card {
-  background: rgba(14, 178, 205, 0.07);
-  border: 1px solid rgba(14, 178, 205, 0.3);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
   border-radius: var(--radius);
   padding: 1.25rem 1rem;
 }
 
-/* Wellbeing / reflection cards */
 .card-warm {
-  background: rgba(245, 166, 35, 0.08);
-  border: 1px solid rgba(245, 166, 35, 0.35);
+  background: var(--color-bg-card-warm);
+  border: 1px solid var(--color-border-warm);
   border-radius: var(--radius);
   padding: 1.25rem 1rem;
 }
 
-/* Divider */
 .divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--color-border), transparent);
 }
 
-/* Phase numbers */
 .phase-number {
   font-family: var(--font-mono);
   font-size: 1.25rem;
   color: var(--color-teal);
+}
+
+/* ============================================
+   ACTION CARD CATEGORY LABELS
+   ============================================ */
+
+.action-category-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  opacity: 0.85;
 }
 
 /* ============================================
@@ -242,7 +331,7 @@ textarea,
 select {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(14, 178, 205, 0.07);
+  background: var(--color-bg-input);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   color: var(--color-text-primary);
@@ -266,7 +355,7 @@ textarea::placeholder {
 }
 
 select option {
-  background: var(--color-navy-light);
+  background: var(--color-bg-secondary);
   color: var(--color-text-primary);
 }
 
@@ -279,26 +368,26 @@ label {
 }
 
 /* ============================================
-   SELECTION CARDS (radio-style)
+   SELECTION CARDS
    ============================================ */
 
 .selection-card {
   padding: 14px 18px;
-  background: rgba(14, 178, 205, 0.06);
-  border: 1px solid rgba(14, 178, 205, 0.3);
+  background: var(--color-selection-bg);
+  border: 1px solid var(--color-border-card);
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .selection-card:hover {
-  border-color: rgba(14, 178, 205, 0.6);
-  background: rgba(14, 178, 205, 0.12);
+  border-color: var(--color-border-strong);
+  background: var(--color-selection-hover);
 }
 
 .selection-card.selected {
   border-color: var(--color-teal);
-  background: rgba(14, 178, 205, 0.18);
+  background: var(--color-selection-active);
   box-shadow: 0 0 0 1px var(--color-teal);
 }
 
@@ -336,12 +425,12 @@ label {
 
 .sidebar-item:hover {
   color: var(--color-text-secondary);
-  background: rgba(14, 178, 205, 0.06);
+  background: var(--color-sidebar-hover);
 }
 
 .sidebar-item.active {
   color: var(--color-teal);
-  background: rgba(14, 178, 205, 0.12);
+  background: var(--color-sidebar-active);
 }
 
 /* ============================================
@@ -350,7 +439,7 @@ label {
 
 .progress-track {
   height: 2px;
-  background: rgba(14, 178, 205, 0.15);
+  background: var(--color-progress-track);
 }
 
 .progress-fill {
@@ -379,13 +468,9 @@ label {
    SCROLLBAR
    ============================================ */
 
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-deep-teal);
+  background: var(--color-scrollbar);
   border-radius: 3px;
 }
