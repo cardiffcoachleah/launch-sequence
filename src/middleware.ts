@@ -38,12 +38,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Never redirect the home page — let it render regardless of auth state
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  // Only run middleware on login and dashboard routes
+  // Never touches /, /briefing, /plan, /auth, or any static assets
+  matcher: ["/login", "/dashboard/:path*"],
 };
