@@ -45,10 +45,10 @@ const categoryStyles: Record<string, { color: string; label: string; bg: string;
     border: "rgba(245, 166, 35, 0.25)",
   },
   logistics: {
-    color: "rgba(255,255,255,0.55)",
+    color: "var(--color-text-tertiary)",
     label: "Logistics",
-    bg: "rgba(255, 255, 255, 0.03)",
-    border: "rgba(255, 255, 255, 0.1)",
+    bg: "var(--color-bg-card)",
+    border: "var(--color-border-subtle)",
   },
 };
 
@@ -285,6 +285,10 @@ export default function PlanPage() {
                         lineHeight: "1.6",
                       }}>
                         {action.description}
+                      </div>
+                      <div className="action-category-label" style={{ color: cat.color }}>
+                        <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
+                        {cat.label}
                       </div>
                     </div>
                   </div>
