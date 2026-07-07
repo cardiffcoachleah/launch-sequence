@@ -1,183 +1,322 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
+import { createClient } from "@/lib/supabase/client";
 
-const phases = [
-  {
-    number: "T-10",
-    title: "Pre-launch",
-    description:
-      "Set intentions, map the org, ground yourself before you walk in.",
-  },
-  {
-    number: "01\u201330",
-    title: "Observe",
-    description:
-      "Listen deeply. Build relationships. Learn the real landscape.",
-  },
-  {
-    number: "31\u201360",
-    title: "Orient",
-    description:
-      "Form your point of view. Score early wins. Build credibility.",
-  },
-  {
-    number: "61\u201390",
-    title: "Act",
-    description:
-      "Make your move. Shape the team. Place your first big bet.",
-  },
-];
+interface PlanAction {
+  title: string;
+  description: string;
+  category: "relationships" | "strategy" | "self" | "logistics";
+}
 
-const systems = [
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z" />
-        <path d="M9 4v13" />
-        <path d="M15 7v13" />
-      </svg>
-    ),
-    title: "Flight plan",
-    description:
-      "AI-generated plan personalized to your role, team, and context.",
-    color: "teal",
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.572" />
-      </svg>
-    ),
-    title: "Ground control",
-    description:
-      "Wellbeing check-ins that ask how you are holding up, not just what you are doing.",
-    color: "amber",
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20v-6M6 20v-4M18 20V10" />
-        <path d="M12 4v2M6 10v2M18 4v2" />
-      </svg>
-    ),
-    title: "Mission reports",
-    description:
-      "Structured feedback from your key people at 30, 60, and 90 days.",
-    color: "mint",
-  },
-];
+interface PlanPhase {
+  title: string;
+  description: string;
+  actions: PlanAction[];
+  reflection: string;
+}
 
-export default function Home() {
+interface Plan {
+  t10: PlanPhase;
+  observe: PlanPhase;
+  orient: PlanPhase;
+  act: PlanPhase;
+}
+
+const categoryStyles: Record<string, { color: string; label: string; bg: string; border: string }> = {
+  relationships: {
+    color: "var(--color-teal)",
+    label: "Relationships",
+    bg: "rgba(14, 178, 205, 0.08)",
+    border: "rgba(14, 178, 205, 0.25)",
+  },
+  strategy: {
+    color: "var(--color-mint)",
+    label: "Strategy",
+    bg: "rgba(106, 232, 164, 0.08)",
+    border: "rgba(106, 232, 164, 0.25)",
+  },
+  self: {
+    color: "var(--color-amber)",
+    label: "Self",
+    bg: "rgba(245, 166, 35, 0.08)",
+    border: "rgba(245, 166, 35, 0.25)",
+  },
+  logistics: {
+    color: "var(--color-text-tertiary)",
+    label: "Logistics",
+    bg: "var(--color-bg-card)",
+    border: "var(--color-border-subtle)",
+  },
+};
+
+const phaseKeys: (keyof Plan)[] = ["t10", "observe", "orient", "act"];
+
+const phaseNumbers: Record<string, string> = {
+  t10:     "T-10",
+  observe: "01\u201330",
+  orient:  "31\u201360",
+  act:     "61\u201390",
+};
+
+export default function PlanPage() {
+  const router = useRouter();
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [activePhase, setActivePhase] = useState<keyof Plan>("t10");
+  const [saveEmail, setSaveEmail] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [saveError, setSaveError] = useState<string>("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("launchsequence_plan");
+    if (stored) {
+      try {
+        setPlan(JSON.parse(stored));
+      } catch {
+        router.push("/briefing");
+      }
+    } else {
+      router.push("/briefing");
+    }
+
+    // Check if already logged in
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setIsLoggedIn(true);
+    });
+  }, [router]);
+
+  async function handleSavePlan() {
+    if (!saveEmail.trim() || !plan) return;
+    setSaveStatus("sending");
+
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: saveEmail.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    if (error) {
+      console.error("Supabase OTP error:", error.message, error.status, error);
+      setSaveStatus("error");
+      setSaveError(error.message);
+      return;
+    }
+
+    setSaveStatus("sent");
+  }
+
+  if (!plan) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Nav />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="generating">Loading flight plan...</div>
+        </div>
+      </div>
+    );
+  }
+
+  const phase = plan[activePhase];
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Nav />
 
-      {/* Hero */}
-      <section className="max-w-[600px] mx-auto text-center px-6 pt-20 pb-16">
-        <p className="eyebrow mb-6">For leaders in transition</p>
-        <h1 className="text-5xl leading-tight mb-6">
-          Your first 90 days,
-          <br />
-          <em className="text-[var(--color-teal)]">
-            planned before day one.
-          </em>
-        </h1>
-        <p className="text-[15px] leading-relaxed text-[var(--color-white-60)] max-w-[460px] mx-auto mb-10">
-          A personalized transition companion that helps you land well in your
-          new leadership role. From T-10 to stable orbit.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Link href="/briefing" className="btn-primary">
-            Begin mission briefing
-          </Link>
-          <a href="#phases" className="btn-secondary">
-            See how it works
-          </a>
+      {/* Save banner — shown until logged in or sent */}
+      {!isLoggedIn && saveStatus !== "sent" && (
+        <div style={{
+          background: "rgba(14,178,205,0.06)",
+          borderBottom: "1px solid rgba(14,178,205,0.2)",
+          padding: "12px 32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "16px",
+          flexWrap: "wrap",
+        }}>
+          <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", margin: 0 }}>
+            Your plan is ready. Save it so you can come back any time.
+          </p>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexShrink: 0 }}>
+            <input
+              type="email"
+              value={saveEmail}
+              onChange={(e) => setSaveEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSavePlan()}
+              placeholder="your@email.com"
+              style={{ width: "220px", padding: "8px 12px", fontSize: "13px", marginBottom: 0 }}
+            />
+            <button
+              onClick={handleSavePlan}
+              disabled={!saveEmail.trim() || saveStatus === "sending"}
+              className="btn-primary"
+              style={{ padding: "8px 16px", fontSize: "13px" }}
+            >
+              {saveStatus === "sending" ? "Sending..." : "Save plan"}
+            </button>
+          </div>
+          {saveStatus === "error" && (
+            <p style={{ fontSize: "13px", color: "var(--color-amber)", margin: 0, width: "100%" }}>
+              {saveError || "Something went wrong. Check the email address and try again."}
+            </p>
+          )}
         </div>
-      </section>
+      )}
 
-      <div className="px-8">
-        <div className="divider" />
-      </div>
+      {/* Sent confirmation */}
+      {saveStatus === "sent" && (
+        <div style={{
+          background: "rgba(106,232,164,0.06)",
+          borderBottom: "1px solid rgba(106,232,164,0.2)",
+          padding: "12px 32px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-mint)", flexShrink: 0 }} aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <p style={{ fontSize: "13px", color: "var(--color-mint)", margin: 0 }}>
+            Check your email for a sign-in link. Click it to save your plan and access your mission dashboard.
+          </p>
+        </div>
+      )}
 
-      {/* Phases */}
-      <section id="phases" className="px-8 py-10">
-        <p className="eyebrow text-center mb-8">Mission phases</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl mx-auto">
-          {phases.map((phase) => (
-            <div key={phase.number} className="card">
-              <div className="phase-number mb-2">{phase.number}</div>
-              <div className="text-[13px] font-medium text-[var(--color-white-95)] mb-1.5">
-                {phase.title}
-              </div>
-              <div className="text-xs text-[var(--color-white-45)] leading-relaxed">
-                {phase.description}
-              </div>
+      <div style={{ flex: 1, display: "flex" }}>
+
+        {/* Sidebar */}
+        <aside style={{
+          width: "240px",
+          borderRight: "1px solid var(--color-border-subtle)",
+          padding: "1.5rem",
+          flexShrink: 0,
+        }}>
+          <p className="eyebrow" style={{ marginBottom: "16px" }}>Mission phases</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            {phaseKeys.map((key) => (
+              <button
+                key={key}
+                onClick={() => setActivePhase(key)}
+                className={`sidebar-item ${activePhase === key ? "active" : ""}`}
+              >
+                <span className="instrument" style={{ fontSize: "12px", marginRight: "8px", opacity: 0.7 }}>
+                  {phaseNumbers[key]}
+                </span>
+                {plan[key].title.split(": ")[1] || plan[key].title}
+              </button>
+            ))}
+          </div>
+
+          {/* Legend */}
+          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
+            <p className="eyebrow" style={{ marginBottom: "12px" }}>Legend</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {Object.entries(categoryStyles).map(([key, style]) => (
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    backgroundColor: style.color,
+                    flexShrink: 0,
+                  }} />
+                  <span style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
+                    {style.label}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </aside>
 
-      <div className="px-8">
-        <div className="divider" />
+        {/* Main content */}
+        <main style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "760px" }}>
+
+          {/* Phase header */}
+          <div style={{ marginBottom: "2rem" }}>
+            <div className="phase-number" style={{ fontSize: "1.5rem", marginBottom: "8px" }}>
+              {phaseNumbers[activePhase]}
+            </div>
+            <h1 style={{ fontSize: "2rem", marginBottom: "12px" }}>{phase.title}</h1>
+            <p style={{ fontSize: "15px", lineHeight: "1.7", color: "var(--color-text-secondary)", maxWidth: "560px" }}>
+              {phase.description}
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2.5rem" }}>
+            {phase.actions.map((action, i) => {
+              const cat = categoryStyles[action.category] || categoryStyles.logistics;
+              return (
+                <div key={i} style={{
+                  background: cat.bg,
+                  border: `1px solid ${cat.border}`,
+                  borderRadius: "var(--radius)",
+                  padding: "1.1rem 1rem",
+                }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                    <div style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: cat.color,
+                      marginTop: "6px",
+                      flexShrink: 0,
+                    }} />
+                    <div>
+                      <div style={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "var(--color-text-primary)",
+                        marginBottom: "4px",
+                      }}>
+                        {action.title}
+                      </div>
+                      <div style={{
+                        fontSize: "14px",
+                        color: "var(--color-text-secondary)",
+                        lineHeight: "1.6",
+                      }}>
+                        {action.description}
+                      </div>
+                      <div className="action-category-label" style={{ color: cat.color }}>
+                        <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
+                        {cat.label}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Reflection prompt */}
+          <div className="card-warm">
+            <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>
+              Reflection
+            </p>
+            <p style={{
+              fontFamily: "var(--font-heading)",
+              fontSize: "1.15rem",
+              fontWeight: 300,
+              fontStyle: "italic",
+              color: "var(--color-text-primary)",
+              lineHeight: "1.6",
+              margin: 0,
+            }}>
+              {phase.reflection}
+            </p>
+          </div>
+
+        </main>
       </div>
-
-      {/* Systems */}
-      <section className="px-8 py-10">
-        <p className="eyebrow text-center mb-8">Onboard systems</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl mx-auto">
-          {systems.map((system) => {
-            const borderColor =
-              system.color === "teal"
-                ? "rgba(14, 178, 205, 0.3)"
-                : system.color === "amber"
-                  ? "rgba(245, 166, 35, 0.3)"
-                  : "rgba(106, 232, 164, 0.3)";
-            const iconColor =
-              system.color === "teal"
-                ? "var(--color-teal)"
-                : system.color === "amber"
-                  ? "var(--color-amber)"
-                  : "var(--color-mint)";
-
-            return (
-              <div key={system.title} className="text-center px-4 py-5">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{
-                    border: `1px solid ${borderColor}`,
-                    color: iconColor,
-                  }}
-                >
-                  {system.icon}
-                </div>
-                <div className="text-[13px] font-medium text-[var(--color-white-95)] mb-1">
-                  {system.title}
-                </div>
-                <div className="text-xs text-[var(--color-white-45)] leading-relaxed">
-                  {system.description}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="text-center py-8 border-t border-[var(--color-border-subtle)]">
-        <p className="text-[1.3rem] font-[300] italic text-[var(--color-white-45)] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-          Built by a coach who has lived this transition six times.
-        </p>
-        <p className="text-xs text-[var(--color-white-30)]">
-          A project by Leah Farmer &middot;{" "}
-          <a
-            href="https://leahfarmer.com"
-            className="text-[var(--color-white-30)] hover:text-[var(--color-teal)]"
-          >
-            leahfarmer.com
-          </a>
-        </p>
-      </footer>
     </div>
   );
 }
