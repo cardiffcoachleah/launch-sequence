@@ -15,6 +15,7 @@ interface BriefingData {
   team_situation_detail: string;
   reporting_to: string;
   team_size: string;
+  team_size_detail: string;
   start_date: string;
   biggest_concern: string;
   what_success_looks_like: string;
@@ -195,6 +196,15 @@ const STEPS = [
     showAlways: true,
   },
   {
+    id: "team_size_detail",
+    label: "Anything else about your org we should know?",
+    sublabel: "Optional — things like geography, maturity, or resourcing history can shape your approach significantly.",
+    type: "textarea-optional" as const,
+    placeholder: "e.g., The team is distributed across 4 countries. We have been under-resourced for two years and morale is low. Most of the senior ICs are contractors...",
+    field: "team_size_detail" as keyof BriefingData,
+    showAlways: true,
+  },
+  {
     id: "start_date",
     label: "When does the new role begin?",
     sublabel: "This anchors your T-10 pre-launch countdown and your 90-day timeline.",
@@ -238,6 +248,7 @@ export default function BriefingPage() {
     team_situation_detail: "",
     reporting_to: "",
     team_size: "",
+    team_size_detail: "",
     start_date: "",
     biggest_concern: "",
     what_success_looks_like: "",
