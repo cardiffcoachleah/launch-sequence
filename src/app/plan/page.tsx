@@ -71,7 +71,7 @@ export default function PlanPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("launchsequence_plan");
+    const stored = localStorage.getItem("launchsequence_plan");
     if (stored) {
       try {
         setPlan(JSON.parse(stored));
