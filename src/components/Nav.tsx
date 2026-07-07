@@ -24,7 +24,7 @@ export default function Nav() {
       borderBottom: "1px solid var(--color-border)",
       background: "var(--color-bg)",
     }}>
-      <Link href={isLoggedIn ? "/dashboard" : "/"} style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
+      <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
         <span className="instrument" style={{
           fontSize: "11px",
           letterSpacing: "0.12em",
