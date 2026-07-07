@@ -6,6 +6,7 @@ import Nav from "@/components/Nav";
 
 interface BriefingData {
   function_area: string;
+  transition_type: string;
   level: string;
   company_stage: string;
   team_situation: string;
@@ -36,6 +37,27 @@ const STEPS = [
       { value: "Other", description: "" },
     ],
     field: "function_area" as keyof BriefingData,
+  },
+  {
+    id: "transition_type",
+    label: "What type of transition is this?",
+    sublabel: "This shapes everything that follows — your plan will be built around your specific situation.",
+    type: "cards" as const,
+    options: [
+      {
+        value: "Joining a new company",
+        description: "You are starting fresh somewhere new. Clean slate, new culture, everything to learn.",
+      },
+      {
+        value: "Promotion or internal move",
+        description: "New role, same company. You carry history, relationships, and reputation — for better and worse.",
+      },
+      {
+        value: "New career path or function",
+        description: "Stepping into a discipline or field that is largely new territory for you.",
+      },
+    ],
+    field: "transition_type" as keyof BriefingData,
   },
   {
     id: "level",
@@ -79,8 +101,9 @@ const STEPS = [
     options: [
       { value: "Building from scratch", description: "No team yet. You are hiring and defining the function." },
       { value: "Inheriting an existing team", description: "People are in place. You need to learn them and earn trust." },
+      { value: "Former peers are now my direct reports", description: "You have been promoted above people you worked alongside. One of the hardest transitions there is." },
       { value: "Restructuring", description: "The team exists but needs reshaping. Hard conversations ahead." },
-      { value: "Joining as a peer leader (individual contributor)", description: "You are not managing a team directly. Influence over authority." },
+      { value: "Joining as a peer leader (no direct reports)", description: "You are not managing a team directly. Influence over authority." },
     ],
     field: "team_situation" as keyof BriefingData,
   },
@@ -120,7 +143,7 @@ const STEPS = [
   },
   {
     id: "start_date",
-    label: "When do you start?",
+    label: "When does the new role begin?",
     sublabel: "This anchors your T-10 pre-launch countdown and your 90-day timeline.",
     type: "date" as const,
     field: "start_date" as keyof BriefingData,
@@ -150,6 +173,7 @@ export default function BriefingPage() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<BriefingData>({
     function_area: "",
+    transition_type: "",
     level: "",
     company_stage: "",
     team_situation: "",
@@ -183,7 +207,6 @@ export default function BriefingPage() {
         if (!res.ok || result.error) {
           throw new Error(result.error || `Server error ${res.status}`);
         }
-        // Save to sessionStorage — persists until they save with email
         sessionStorage.setItem("launchsequence_plan", JSON.stringify(result));
         sessionStorage.setItem("launchsequence_briefing", JSON.stringify(data));
         router.push("/plan");
