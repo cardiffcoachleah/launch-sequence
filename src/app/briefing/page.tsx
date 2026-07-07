@@ -257,9 +257,9 @@ export default function BriefingPage() {
   const progress = ((step + 1) / visibleSteps.length) * 100;
 
   // Get sublabel — either static string or function
-  const sublabel = "sublabelFn" in currentStep
+  const sublabel = "sublabelFn" in currentStep && typeof currentStep.sublabelFn === "function"
     ? currentStep.sublabelFn(data)
-    : currentStep.sublabel;
+    : "sublabel" in currentStep ? currentStep.sublabel : "";
 
   function updateField(value: string) {
     setData((prev) => ({ ...prev, [currentStep.field]: value }));
