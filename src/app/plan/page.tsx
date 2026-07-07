@@ -64,6 +64,7 @@ const phaseNumbers: Record<string, string> = {
 export default function PlanPage() {
   const router = useRouter();
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activePhase, setActivePhase] = useState<keyof Plan>("t10");
   const [saveEmail, setSaveEmail] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -71,22 +72,45 @@ export default function PlanPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("launchsequence_plan");
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-      } catch {
-        router.push("/briefing");
+    async function loadPlan() {
+      // First try localStorage (freshly generated, not yet saved)
+      const stored = localStorage.getItem("launchsequence_plan");
+      if (stored) {
+        try {
+          setPlan(JSON.parse(stored));
+          setLoading(false);
+          return;
+        } catch {
+          // fall through to Supabase
+        }
       }
-    } else {
+
+      // Then try Supabase (previously saved plan)
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        setIsLoggedIn(true);
+        const { data: planRow } = await supabase
+          .from("plans")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (planRow?.plan_data) {
+          setPlan(planRow.plan_data);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Nothing found anywhere — send to briefing
       router.push("/briefing");
     }
 
-    // Check if already logged in
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setIsLoggedIn(true);
-    });
+    loadPlan();
   }, [router]);
 
   async function handleSavePlan() {
@@ -112,7 +136,7 @@ export default function PlanPage() {
     setSaveStatus("sent");
   }
 
-  if (!plan) {
+  if (loading || !plan) {
     return (
       <div className="min-h-screen flex flex-col">
         <Nav />
