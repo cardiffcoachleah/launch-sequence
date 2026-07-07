@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Nav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,6 +22,7 @@ export default function Nav() {
       justifyContent: "space-between",
       padding: "20px 32px",
       borderBottom: "1px solid var(--color-border)",
+      background: "var(--color-bg)",
     }}>
       <Link href={isLoggedIn ? "/dashboard" : "/"} style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
         <span className="instrument" style={{
@@ -36,7 +38,8 @@ export default function Nav() {
         </span>
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <ThemeToggle />
         {isLoggedIn ? (
           <Link href="/dashboard" className="btn-primary" style={{ fontSize: "14px" }}>
             My mission
