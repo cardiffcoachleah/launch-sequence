@@ -73,9 +73,9 @@ export default function DashboardPage() {
 
       setUserEmail(user.email || "");
 
-      // Check if we have a pending plan in sessionStorage to save
-      const sessionPlan = sessionStorage.getItem("launchsequence_plan");
-      const sessionBriefing = sessionStorage.getItem("launchsequence_briefing");
+      // Check if we have a pending plan in localStorage to save
+      const sessionPlan = localStorage.getItem("launchsequence_plan");
+      const sessionBriefing = localStorage.getItem("launchsequence_briefing");
 
       if (sessionPlan && sessionBriefing) {
         try {
@@ -96,6 +96,7 @@ export default function DashboardPage() {
               .insert({
                 user_id: user.id,
                 role: `${briefingData.function_area} — ${briefingData.level}`,
+                transition_type: briefingData.transition_type,
                 company_stage: briefingData.company_stage,
                 team_situation: briefingData.team_situation,
                 reporting_to: briefingData.reporting_to,
@@ -116,9 +117,9 @@ export default function DashboardPage() {
             }
           }
 
-          // Clear sessionStorage now that it's saved
-          sessionStorage.removeItem("launchsequence_plan");
-          sessionStorage.removeItem("launchsequence_briefing");
+          // Clear localStorage now that it's saved
+          localStorage.removeItem("launchsequence_plan");
+          localStorage.removeItem("launchsequence_briefing");
         } catch (e) {
           console.error("Failed to save session data:", e);
         }
