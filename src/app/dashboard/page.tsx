@@ -274,19 +274,20 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* Captain's Log — Phase 2 */}
-          <div className="card" style={{ opacity: 0.5, cursor: "not-allowed" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-              <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(106,232,164,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-mint)", flexShrink: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          {/* Captain's Log */}
+          <Link href="/captains-log" style={{ textDecoration: "none" }}>
+            <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(106,232,164,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-mint)", flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Captain's log</div>
               </div>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Captain's log</div>
-              <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-mint)", marginLeft: "auto" }}>Soon</span>
+              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
+                Notes, observations, and reflections as you go.
+              </p>
             </div>
-            <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
-              Weekly reflections tied to your current phase.
-            </p>
-          </div>
+          </Link>
 
         </div>
 
