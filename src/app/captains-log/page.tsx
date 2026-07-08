@@ -243,15 +243,23 @@ export default function CaptainsLogPage() {
                   const date = new Date(entry.created_at).toLocaleDateString("en-US", {
                     month: "short", day: "numeric", year: "numeric"
                   });
+                  const isActionNote = !!(entry as {action_title?: string}).action_title;
                   return (
                     <div key={entry.id} className="card">
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                        <span className="instrument" style={{ fontSize: "11px", color: "var(--color-teal)" }}>
-                          {PHASE_LABELS[entry.phase] || entry.phase}
-                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span className="instrument" style={{ fontSize: "11px", color: isActionNote ? "var(--color-mint)" : "var(--color-teal)" }}>
+                            {PHASE_LABELS[entry.phase] || entry.phase}
+                          </span>
+                          {isActionNote && (
+                            <span style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>
+                              · {(entry as {action_title?: string}).action_title}
+                            </span>
+                          )}
+                        </div>
                         <span style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>{date}</span>
                       </div>
-                      {entry.prompt && (
+                      {!isActionNote && entry.prompt && (
                         <p style={{ fontSize: "12px", color: "var(--color-text-minimum)", fontStyle: "italic", marginBottom: "8px", lineHeight: "1.5" }}>
                           {entry.prompt}
                         </p>
