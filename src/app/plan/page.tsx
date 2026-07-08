@@ -31,6 +31,16 @@ interface StatusMap {
   [key: string]: ActionStatus;
 }
 
+interface Note {
+  id: string;
+  entry: string;
+  created_at: string;
+}
+
+interface NotesMap {
+  [key: string]: Note[];
+}
+
 const categoryStyles: Record<string, { color: string; label: string; bg: string; border: string }> = {
   relationships: {
     color: "var(--color-teal)",
@@ -133,6 +143,10 @@ export default function PlanPage() {
   const [loading, setLoading] = useState(true);
   const [activePhase, setActivePhase] = useState<keyof Plan>("t10");
   const [statusMap, setStatusMap] = useState<StatusMap>({});
+  const [notesMap, setNotesMap] = useState<NotesMap>({});
+  const [expandedNote, setExpandedNote] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState<Record<string, string>>({});
+  const [savingNote, setSavingNote] = useState<string | null>(null);
   const [saveEmail, setSaveEmail] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [saveError, setSaveError] = useState<string>("");
@@ -160,6 +174,7 @@ export default function PlanPage() {
             if (planRow) {
               setPlanId(planRow.id);
               loadStatuses(user.id, planRow.id);
+              loadNotes(user.id, planRow.id);
             }
           }
           return;
@@ -182,6 +197,7 @@ export default function PlanPage() {
           setPlan(planRow.plan_data);
           setPlanId(planRow.id);
           loadStatuses(user.id, planRow.id);
+          loadNotes(user.id, planRow.id);
           setLoading(false);
           return;
         }
@@ -208,6 +224,63 @@ export default function PlanPage() {
       });
       setStatusMap(map);
     }
+  }
+
+  async function loadNotes(userId: string, planId: string) {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("captains_log")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("plan_id", planId)
+      .order("created_at", { ascending: true });
+
+    if (data) {
+      const map: NotesMap = {};
+      data.forEach((row) => {
+        const key = row.action_key;
+        if (key) {
+          if (!map[key]) map[key] = [];
+          map[key].push({ id: row.id, entry: row.entry, created_at: row.created_at });
+        }
+      });
+      setNotesMap(map);
+    }
+  }
+
+  async function saveNote(phase: string, index: number, actionTitle: string) {
+    const key = getStatusKey(phase, index);
+    const text = noteText[key];
+    if (!text?.trim() || !planId) return;
+
+    setSavingNote(key);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("captains_log")
+      .insert({
+        user_id: user.id,
+        plan_id: planId,
+        phase,
+        action_key: key,
+        action_title: actionTitle,
+        prompt: null,
+        entry: text.trim(),
+      })
+      .select()
+      .single();
+
+    if (data) {
+      setNotesMap((prev) => ({
+        ...prev,
+        [key]: [...(prev[key] || []), { id: data.id, entry: data.entry, created_at: data.created_at }],
+      }));
+      setNoteText((prev) => ({ ...prev, [key]: "" }));
+    }
+
+    setSavingNote(null);
   }
 
   const cycleStatus = useCallback(async (phase: string, index: number) => {
@@ -481,6 +554,67 @@ export default function PlanPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Inline notes — shown when in progress or done */}
+                  {isLoggedIn && (status === "in_progress" || status === "done") && (
+                    <div
+                      style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--color-border-subtle)" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Existing notes */}
+                      {(notesMap[statusKey] || []).map((note) => (
+                        <div key={note.id} style={{ marginBottom: "8px", padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "var(--radius)", borderLeft: `2px solid ${cat.color}` }}>
+                          <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6", margin: "0 0 4px", whiteSpace: "pre-wrap" }}>
+                            {note.entry}
+                          </p>
+                          <span style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>
+                            {new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                      ))}
+
+                      {/* Note toggle */}
+                      {expandedNote !== statusKey ? (
+                        <button
+                          onClick={() => setExpandedNote(statusKey)}
+                          style={{ fontSize: "12px", color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer", padding: "4px 0", display: "flex", alignItems: "center", gap: "5px" }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14M5 12h14"/>
+                          </svg>
+                          Add note
+                        </button>
+                      ) : (
+                        <div style={{ marginTop: "4px" }}>
+                          <textarea
+                            value={noteText[statusKey] || ""}
+                            onChange={(e) => setNoteText((prev) => ({ ...prev, [statusKey]: e.target.value }))}
+                            placeholder="What are you learning? What's happening with this action?"
+                            rows={3}
+                            autoFocus
+                            style={{ fontSize: "13px", marginBottom: "8px", resize: "none" }}
+                          />
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <button
+                              onClick={() => saveNote(activePhase, i, action.title)}
+                              disabled={!noteText[statusKey]?.trim() || savingNote === statusKey}
+                              className="btn-primary"
+                              style={{ padding: "6px 14px", fontSize: "12px" }}
+                            >
+                              {savingNote === statusKey ? "Saving..." : "Save note"}
+                            </button>
+                            <button
+                              onClick={() => setExpandedNote(null)}
+                              className="back-link"
+                              style={{ fontSize: "12px" }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
