@@ -613,245 +613,240 @@ export default function PlanPage() {
               const isDone = status === "done";
               const isNA = status === "not_applicable";
               const isDimmed = isDone || isNA;
+              const showRipple = ripples.length > 0 && rippleKey === statusKey;
 
               return (
-                <div
-                  key={i}
-                  onClick={() => editingKey !== statusKey && cycleStatus(activePhase, i)}
-                  style={{
-                    background: cat.bg,
-                    border: `1px solid ${isDone ? "rgba(106,232,164,0.3)" : isNA ? "var(--color-border-subtle)" : cat.border}`,
-                    borderRadius: "var(--radius)",
-                    padding: "1rem",
-                    cursor: isLoggedIn && editingKey !== statusKey ? "pointer" : "default",
-                    transition: "all 0.2s",
-                    opacity: isNA ? 0.4 : 1,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                    {/* Status indicator */}
-                    {isLoggedIn && (
+                <div key={i}>
+                  <div
+                    onClick={() => editingKey !== statusKey && cycleStatus(activePhase, i)}
+                    style={{
+                      background: cat.bg,
+                      border: `1px solid ${isDone ? "rgba(106,232,164,0.3)" : isNA ? "var(--color-border-subtle)" : cat.border}`,
+                      borderRadius: "var(--radius)",
+                      padding: "1rem",
+                      cursor: isLoggedIn && editingKey !== statusKey ? "pointer" : "default",
+                      transition: "all 0.2s",
+                      opacity: isNA ? 0.4 : 1,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                      {/* Status indicator */}
+                      {isLoggedIn && (
+                        <div
+                          style={{
+                            width: "24px", height: "24px", borderRadius: "50%",
+                            border: `1px solid ${isDone ? "var(--color-mint)" : "var(--color-border)"}`,
+                            background: statusConfig.bg,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: statusConfig.color, flexShrink: 0, marginTop: "2px", transition: "all 0.2s",
+                          }}
+                          title={`Status: ${statusConfig.label}. Click to change.`}
+                        >
+                          {statusConfig.icon}
+                        </div>
+                      )}
+
+                      {/* Content */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {editingKey === statusKey ? (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="text"
+                              value={editTitle}
+                              onChange={(e) => setEditTitle(e.target.value)}
+                              style={{ marginBottom: "8px", fontSize: "14px", fontWeight: 500, padding: "6px 10px" }}
+                              autoFocus
+                            />
+                            <textarea
+                              value={editDescription}
+                              onChange={(e) => setEditDescription(e.target.value)}
+                              rows={3}
+                              style={{ marginBottom: "10px", fontSize: "13px", resize: "none" }}
+                            />
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <button
+                                onClick={() => saveEdit(activePhase, i)}
+                                disabled={!editTitle.trim() || savingEdit}
+                                className="btn-primary"
+                                style={{ padding: "5px 14px", fontSize: "12px" }}
+                              >
+                                {savingEdit ? "Saving..." : "Save"}
+                              </button>
+                              <button onClick={() => setEditingKey(null)} className="back-link" style={{ fontSize: "12px" }}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
+                              <div style={{
+                                fontSize: "14px", fontWeight: 500,
+                                color: isDimmed ? "var(--color-text-tertiary)" : "var(--color-text-primary)",
+                                textDecoration: isDone ? "line-through" : "none",
+                                transition: "all 0.2s",
+                              }}>
+                                {action.title}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                                {isLoggedIn && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingKey(statusKey);
+                                      setEditTitle(action.title);
+                                      setEditDescription(action.description);
+                                    }}
+                                    style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", color: "var(--color-text-minimum)", display: "flex", alignItems: "center", transition: "color 0.2s" }}
+                                    title="Edit this action"
+                                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-minimum)")}
+                                  >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                  </button>
+                                )}
+                                {isLoggedIn && (
+                                  <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: statusConfig.color, marginTop: "2px" }}>
+                                    {statusConfig.label}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: "13px", color: isDimmed ? "var(--color-text-minimum)" : "var(--color-text-secondary)", lineHeight: "1.6", transition: "color 0.2s" }}>
+                              {action.description}
+                            </div>
+                            <div className="action-category-label" style={{ color: cat.color }}>
+                              <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
+                              {cat.label}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Inline notes — shown when in progress or done */}
+                    {isLoggedIn && (status === "in_progress" || status === "done") && (
                       <div
-                        style={{
-                          width: "24px",
-                          height: "24px",
-                          borderRadius: "50%",
-                          border: `1px solid ${isDone ? "var(--color-mint)" : "var(--color-border)"}`,
-                          background: statusConfig.bg,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: statusConfig.color,
-                          flexShrink: 0,
-                          marginTop: "2px",
-                          transition: "all 0.2s",
-                        }}
-                        title={`Status: ${statusConfig.label}. Click to change.`}
+                        style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--color-border-subtle)" }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {statusConfig.icon}
+                        {(notesMap[statusKey] || []).map((note) => (
+                          <div key={note.id} style={{ marginBottom: "8px", padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "var(--radius)", borderLeft: `2px solid ${cat.color}` }}>
+                            <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6", margin: "0 0 4px", whiteSpace: "pre-wrap" }}>
+                              {note.entry}
+                            </p>
+                            <span style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>
+                              {new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </span>
+                          </div>
+                        ))}
+                        {expandedNote !== statusKey ? (
+                          <button
+                            onClick={() => setExpandedNote(statusKey)}
+                            style={{ fontSize: "12px", color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer", padding: "4px 0", display: "flex", alignItems: "center", gap: "5px" }}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Add note
+                          </button>
+                        ) : (
+                          <div style={{ marginTop: "4px" }}>
+                            <textarea
+                              value={noteText[statusKey] || ""}
+                              onChange={(e) => setNoteText((prev) => ({ ...prev, [statusKey]: e.target.value }))}
+                              placeholder="What are you learning? What's happening with this action?"
+                              rows={3}
+                              autoFocus
+                              style={{ fontSize: "13px", marginBottom: "8px", resize: "none" }}
+                            />
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <button
+                                onClick={() => saveNote(activePhase, i, action.title)}
+                                disabled={!noteText[statusKey]?.trim() || savingNote === statusKey}
+                                className="btn-primary"
+                                style={{ padding: "6px 14px", fontSize: "12px" }}
+                              >
+                                {savingNote === statusKey ? "Saving..." : "Save note"}
+                              </button>
+                              <button onClick={() => setExpandedNote(null)} className="back-link" style={{ fontSize: "12px" }}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
-
-                    {/* Content */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      {editingKey === statusKey ? (
-                        /* Edit mode */
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="text"
-                            value={editTitle}
-                            onChange={(e) => setEditTitle(e.target.value)}
-                            style={{ marginBottom: "8px", fontSize: "14px", fontWeight: 500, padding: "6px 10px" }}
-                            autoFocus
-                          />
-                          <textarea
-                            value={editDescription}
-                            onChange={(e) => setEditDescription(e.target.value)}
-                            rows={3}
-                            style={{ marginBottom: "10px", fontSize: "13px", resize: "none" }}
-                          />
-                          <div style={{ display: "flex", gap: "8px" }}>
-                            <button
-                              onClick={() => saveEdit(activePhase, i)}
-                              disabled={!editTitle.trim() || savingEdit}
-                              className="btn-primary"
-                              style={{ padding: "5px 14px", fontSize: "12px" }}
-                            >
-                              {savingEdit ? "Saving..." : "Save"}
-                            </button>
-                            <button
-                              onClick={() => setEditingKey(null)}
-                              className="back-link"
-                              style={{ fontSize: "12px" }}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        /* Read mode */
-                        <>
-                          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
-                            <div style={{
-                              fontSize: "14px",
-                              fontWeight: 500,
-                              color: isDimmed ? "var(--color-text-tertiary)" : "var(--color-text-primary)",
-                              textDecoration: isDone ? "line-through" : "none",
-                              transition: "all 0.2s",
-                            }}>
-                              {action.title}
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-                              {isLoggedIn && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingKey(statusKey);
-                                    setEditTitle(action.title);
-                                    setEditDescription(action.description);
-                                  }}
-                                  style={{
-                                    background: "none",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    padding: "2px",
-                                    color: "var(--color-text-minimum)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    transition: "color 0.2s",
-                                  }}
-                                  title="Edit this action"
-                                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
-                                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-minimum)")}
-                                >
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                  </svg>
-                                </button>
-                              )}
-                              {isLoggedIn && (
-                                <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: statusConfig.color, marginTop: "2px" }}>
-                                  {statusConfig.label}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div style={{ fontSize: "13px", color: isDimmed ? "var(--color-text-minimum)" : "var(--color-text-secondary)", lineHeight: "1.6", transition: "color 0.2s" }}>
-                            {action.description}
-                          </div>
-                          <div className="action-category-label" style={{ color: cat.color }}>
-                            <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
-                            {cat.label}
-                          </div>
-                        </>
-                      )}
-                    </div>
                   </div>
 
-                  {/* Inline notes — shown when in progress or done */}
-                  {isLoggedIn && (status === "in_progress" || status === "done") && (
-                    <div
-                      style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--color-border-subtle)" }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {/* Existing notes */}
-                      {(notesMap[statusKey] || []).map((note) => (
-                        <div key={note.id} style={{ marginBottom: "8px", padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "var(--radius)", borderLeft: `2px solid ${cat.color}` }}>
-                          <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6", margin: "0 0 4px", whiteSpace: "pre-wrap" }}>
-                            {note.entry}
-                          </p>
-                          <span style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>
-                            {new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                          </span>
-                        </div>
-                      ))}
-
-                      {/* Note toggle */}
-                      {expandedNote !== statusKey ? (
+                  {/* Ripple notification — appears directly below the edited card */}
+                  {showRipple && (
+                    <div style={{
+                      padding: "12px 14px",
+                      background: "rgba(245,166,35,0.06)",
+                      border: "1px solid rgba(245,166,35,0.3)",
+                      borderLeft: "3px solid var(--color-amber)",
+                      borderRadius: "var(--radius)",
+                      marginTop: "4px",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                        <p className="eyebrow" style={{ color: "var(--color-amber)", margin: 0, fontSize: "11px" }}>Things to consider</p>
                         <button
-                          onClick={() => setExpandedNote(statusKey)}
-                          style={{ fontSize: "12px", color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer", padding: "4px 0", display: "flex", alignItems: "center", gap: "5px" }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 5v14M5 12h14"/>
-                          </svg>
-                          Add note
-                        </button>
-                      ) : (
-                        <div style={{ marginTop: "4px" }}>
-                          <textarea
-                            value={noteText[statusKey] || ""}
-                            onChange={(e) => setNoteText((prev) => ({ ...prev, [statusKey]: e.target.value }))}
-                            placeholder="What are you learning? What's happening with this action?"
-                            rows={3}
-                            autoFocus
-                            style={{ fontSize: "13px", marginBottom: "8px", resize: "none" }}
-                          />
-                          <div style={{ display: "flex", gap: "8px" }}>
-                            <button
-                              onClick={() => saveNote(activePhase, i, action.title)}
-                              disabled={!noteText[statusKey]?.trim() || savingNote === statusKey}
-                              className="btn-primary"
-                              style={{ padding: "6px 14px", fontSize: "12px" }}
-                            >
-                              {savingNote === statusKey ? "Saving..." : "Save note"}
-                            </button>
-                            <button
-                              onClick={() => setExpandedNote(null)}
-                              className="back-link"
-                              style={{ fontSize: "12px" }}
-                            >
-                              Cancel
-                            </button>
+                          onClick={() => { setRipples([]); setRippleKey(null); }}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "16px", lineHeight: 1, padding: 0 }}
+                          aria-label="Dismiss"
+                        >&times;</button>
+                      </div>
+                      <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)", marginBottom: "8px", lineHeight: "1.5" }}>
+                        This change might affect:
+                      </p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        {ripples.map((r, ri) => (
+                          <div key={ri} style={{ paddingLeft: "10px", borderLeft: "2px solid rgba(245,166,35,0.35)" }}>
+                            <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "1px" }}>{r.action_title}</div>
+                            <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{r.reason}</div>
                           </div>
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
               );
             })}
-          </div>
 
-          {/* Ripple notification */}
-          {ripples.length > 0 && rippleKey && (
-            <div style={{
-              marginBottom: "1.5rem",
-              padding: "14px 16px",
-              background: "rgba(245,166,35,0.06)",
-              border: "1px solid rgba(245,166,35,0.3)",
-              borderRadius: "var(--radius)",
-            }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "10px" }}>
-                <p className="eyebrow" style={{ color: "var(--color-amber)", margin: 0 }}>
-                  Things to consider
+            {/* Ripple notification for add flow */}
+            {ripples.length > 0 && rippleKey === "add_ripple" && (
+              <div style={{
+                padding: "14px 16px",
+                background: "rgba(245,166,35,0.06)",
+                border: "1px solid rgba(245,166,35,0.3)",
+                borderRadius: "var(--radius)",
+              }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "10px" }}>
+                  <p className="eyebrow" style={{ color: "var(--color-amber)", margin: 0 }}>Things to consider</p>
+                  <button
+                    onClick={() => { setRipples([]); setRippleKey(null); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "18px", lineHeight: 1, padding: 0 }}
+                    aria-label="Dismiss"
+                  >&times;</button>
+                </div>
+                <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "10px", lineHeight: "1.5" }}>
+                  Based on what you added, these existing actions might be worth revisiting:
                 </p>
-                <button
-                  onClick={() => { setRipples([]); setRippleKey(null); }}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "18px", lineHeight: 1, padding: 0, flexShrink: 0 }}
-                  aria-label="Dismiss"
-                >
-                  &times;
-                </button>
-              </div>
-              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "10px", lineHeight: "1.5" }}>
-                Based on what you changed, these existing actions might be worth revisiting:
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {ripples.map((r, i) => (
-                  <div key={i} style={{ paddingLeft: "12px", borderLeft: "2px solid rgba(245,166,35,0.4)" }}>
-                    <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
-                      {r.action_title}
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {ripples.map((r, ri) => (
+                    <div key={ri} style={{ paddingLeft: "12px", borderLeft: "2px solid rgba(245,166,35,0.4)" }}>
+                      <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>{r.action_title}</div>
+                      <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{r.reason}</div>
                     </div>
-                    <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>
-                      {r.reason}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Reflection prompt */}
           <div className="card-warm">
