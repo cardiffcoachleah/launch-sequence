@@ -6,32 +6,21 @@ import { createClient } from "@/lib/supabase/client";
 import Nav from "@/components/Nav";
 import Link from "next/link";
 
-interface PlanPhase {
-  title: string;
-  description: string;
-  actions: { title: string; description: string; category: string }[];
-  reflection: string;
-}
-
-interface Plan {
-  t10: PlanPhase;
-  observe: PlanPhase;
-  orient: PlanPhase;
-  act: PlanPhase;
-}
-
 interface BriefingRow {
   id: string;
   start_date: string;
   role: string;
   company_stage: string;
+  transition_type?: string;
+  created_at: string;
 }
 
 interface PlanRow {
   id: string;
-  plan_data: Plan;
+  plan_data: Record<string, unknown>;
   created_at: string;
   briefing_id: string;
+  is_current: boolean;
 }
 
 function getDaysFromStart(startDate: string): number {
@@ -59,7 +48,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [briefing, setBriefing] = useState<BriefingRow | null>(null);
   const [plan, setPlan] = useState<PlanRow | null>(null);
+  const [pastMissions, setPastMissions] = useState<BriefingRow[]>([]);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [showPastMissions, setShowPastMissions] = useState(false);
+  const [startingNew, setStartingNew] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -73,7 +65,7 @@ export default function DashboardPage() {
 
       setUserEmail(user.email || "");
 
-      // Check if we have a pending plan in localStorage to save
+      // Check for pending plan in localStorage
       const sessionPlan = localStorage.getItem("launchsequence_plan");
       const sessionBriefing = localStorage.getItem("launchsequence_briefing");
 
@@ -82,46 +74,44 @@ export default function DashboardPage() {
           const briefingData = JSON.parse(sessionBriefing);
           const planData = JSON.parse(sessionPlan);
 
-          // Check if already saved (avoid duplicates)
-          const { data: existingPlans } = await supabase
+          // Archive any existing current plan first
+          await supabase
             .from("plans")
-            .select("id")
+            .update({ is_current: false })
             .eq("user_id", user.id)
-            .limit(1);
+            .eq("is_current", true);
 
-          if (!existingPlans || existingPlans.length === 0) {
-            // Save briefing
-            const { data: briefingRow } = await supabase
-              .from("briefings")
-              .insert({
-                user_id: user.id,
-                role: `${briefingData.function_area} — ${briefingData.level}`,
-                transition_type: briefingData.transition_type,
-                seniority_change: briefingData.seniority_change,
-                company_stage: briefingData.company_stage,
-                company_stage_detail: briefingData.company_stage_detail,
-                team_situation: briefingData.team_situation,
-                team_situation_detail: briefingData.team_situation_detail,
-                reporting_to: briefingData.reporting_to,
-                team_size: briefingData.team_size,
-                team_size_detail: briefingData.team_size_detail,
-                start_date: briefingData.start_date,
-                biggest_concern: briefingData.biggest_concern,
-                what_success_looks_like: briefingData.what_success_looks_like,
-              })
-              .select()
-              .single();
+          const { data: briefingRow } = await supabase
+            .from("briefings")
+            .insert({
+              user_id: user.id,
+              role: `${briefingData.function_area} — ${briefingData.level || "Entry level"}`,
+              transition_type: briefingData.transition_type,
+              seniority_change: briefingData.seniority_change,
+              company_stage: briefingData.company_stage,
+              company_stage_detail: briefingData.company_stage_detail,
+              team_situation: briefingData.team_situation,
+              team_situation_detail: briefingData.team_situation_detail,
+              reporting_to: briefingData.reporting_to,
+              team_size: briefingData.team_size,
+              team_size_detail: briefingData.team_size_detail,
+              start_date: briefingData.start_date,
+              biggest_concern: briefingData.biggest_concern,
+              what_success_looks_like: briefingData.what_success_looks_like,
+            })
+            .select()
+            .single();
 
-            if (briefingRow) {
-              await supabase.from("plans").insert({
-                user_id: user.id,
-                briefing_id: briefingRow.id,
-                plan_data: planData,
-              });
-            }
+          if (briefingRow) {
+            await supabase.from("plans").insert({
+              user_id: user.id,
+              briefing_id: briefingRow.id,
+              plan_data: planData,
+              is_current: true,
+              version: 1,
+            });
           }
 
-          // Clear localStorage now that it's saved
           localStorage.removeItem("launchsequence_plan");
           localStorage.removeItem("launchsequence_briefing");
         } catch (e) {
@@ -129,7 +119,7 @@ export default function DashboardPage() {
         }
       }
 
-      // Load from Supabase
+      // Load current mission
       const { data: briefingRow } = await supabase
         .from("briefings")
         .select("*")
@@ -139,7 +129,6 @@ export default function DashboardPage() {
         .single();
 
       if (!briefingRow) {
-        // No plan yet — show the dashboard with a CTA to start, don't redirect
         setLoading(false);
         return;
       }
@@ -150,21 +139,51 @@ export default function DashboardPage() {
         .from("plans")
         .select("*")
         .eq("user_id", user.id)
+        .eq("is_current", true)
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
 
       if (planRow) setPlan(planRow);
+
+      // Load past missions (all but the most recent)
+      const { data: allBriefings } = await supabase
+        .from("briefings")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (allBriefings && allBriefings.length > 1) {
+        setPastMissions(allBriefings.slice(1));
+      }
+
       setLoading(false);
     }
 
     load();
   }, [router]);
 
+  async function handleStartNewMission() {
+    setStartingNew(true);
+    const supabase = createClient();
+
+    // Archive current plan
+    await supabase
+      .from("plans")
+      .update({ is_current: false })
+      .eq("user_id", userEmail ? (await supabase.auth.getUser()).data.user?.id || "" : "")
+      .eq("is_current", true);
+
+    // Clear localStorage and go to briefing
+    localStorage.removeItem("launchsequence_plan");
+    localStorage.removeItem("launchsequence_briefing");
+    router.push("/briefing");
+  }
+
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    sessionStorage.clear();
+    localStorage.clear();
     router.push("/");
   }
 
@@ -201,6 +220,8 @@ export default function DashboardPage() {
   const progress = getPhaseProgress(days);
   const daysLabel = days < 0
     ? `T${days} — ${Math.abs(days)} days to launch`
+    : days > 90
+    ? `Day ${days} — Mission complete`
     : `Day ${days} of 90`;
 
   return (
@@ -244,7 +265,6 @@ export default function DashboardPage() {
         {/* Action cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px", marginBottom: "2.5rem" }}>
 
-          {/* Flight Plan */}
           <Link href="/plan" style={{ textDecoration: "none" }}>
             <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
@@ -259,7 +279,6 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* Ground Control */}
           <Link href="/ground-control" style={{ textDecoration: "none" }}>
             <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
@@ -274,7 +293,6 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* Captain's Log */}
           <Link href="/captains-log" style={{ textDecoration: "none" }}>
             <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
@@ -291,12 +309,97 @@ export default function DashboardPage() {
 
         </div>
 
+        {/* Past missions */}
+        {pastMissions.length > 0 && (
+          <div style={{ marginBottom: "2rem" }}>
+            <button
+              onClick={() => setShowPastMissions(!showPastMissions)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "13px",
+                color: "var(--color-text-tertiary)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0",
+                marginBottom: showPastMissions ? "12px" : "0",
+              }}
+            >
+              <svg
+                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                strokeLinecap="round" strokeLinejoin="round"
+                style={{ transform: showPastMissions ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}
+              >
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+              Past missions ({pastMissions.length})
+            </button>
+
+            {showPastMissions && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {pastMissions.map((m) => {
+                  const mDays = getDaysFromStart(m.start_date);
+                  const mDate = new Date(m.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+                  return (
+                    <div key={m.id} style={{
+                      padding: "12px 16px",
+                      background: "var(--color-bg-card)",
+                      border: "1px solid var(--color-border-subtle)",
+                      borderRadius: "var(--radius)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "12px",
+                    }}>
+                      <div>
+                        <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                          {m.role}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>
+                          {mDate} · {mDays > 90 ? "Completed" : mDays < 0 ? "Archived before launch" : `Day ${mDays}`}
+                        </div>
+                      </div>
+                      <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", flexShrink: 0 }}>
+                        Archived
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Footer */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)", flexWrap: "wrap", gap: "12px" }}>
           <span style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>{userEmail}</span>
-          <button onClick={handleSignOut} className="back-link" style={{ fontSize: "13px" }}>
-            Sign out
-          </button>
+          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+            <button
+              onClick={handleStartNewMission}
+              disabled={startingNew}
+              style={{
+                fontSize: "13px",
+                color: "var(--color-teal)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              {startingNew ? "Starting..." : "New mission"}
+            </button>
+            <button onClick={handleSignOut} className="back-link" style={{ fontSize: "13px" }}>
+              Sign out
+            </button>
+          </div>
         </div>
 
       </div>
