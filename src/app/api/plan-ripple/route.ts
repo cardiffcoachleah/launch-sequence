@@ -22,9 +22,12 @@ export async function POST(req: Request) {
 
 When a leader edits or adds something to their transition plan, other items in the plan may need to be reconsidered. Your job is to identify 1-3 specific existing actions that might be affected by the change — not to rewrite them, just to flag them for the user's attention.
 
+The actions are listed with their phase prefix in square brackets: [t10], [observe], [orient], or [act].
+
 RULES:
 - Only flag items that are genuinely connected to the change. If nothing is clearly affected, return an empty array.
-- Be specific — name the action title, not a vague category.
+- Be specific — use the exact action title from the list.
+- Include the phase key exactly as it appears in the prefix (t10, observe, orient, or act).
 - Keep each note to one sentence explaining WHY it might be affected.
 - Maximum 3 items. Fewer is better if the connection is weak.
 - Do not flag the changed item itself.
@@ -35,6 +38,7 @@ Return ONLY valid JSON:
   "ripples": [
     {
       "action_title": "Exact title of the affected action",
+      "phase": "observe",
       "reason": "One sentence explaining the connection."
     }
   ]
