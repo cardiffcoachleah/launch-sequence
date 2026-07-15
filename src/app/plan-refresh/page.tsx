@@ -146,8 +146,13 @@ export default function PlanRefreshPage() {
         })
         .eq("id", planId);
 
-      // Update localStorage
+      // Update localStorage and store ripple context for plan page
       localStorage.setItem("launchsequence_plan", JSON.stringify(updatedPlan));
+      localStorage.setItem("launchsequence_ripple_context", JSON.stringify({
+        change_type: "add",
+        change_description: addContext,
+        phase: addPhase,
+      }));
       router.push("/plan");
     } catch (err) {
       console.error(err);
