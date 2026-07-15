@@ -50,8 +50,9 @@ export default function DashboardPage() {
   const [plan, setPlan] = useState<PlanRow | null>(null);
   const [pastMissions, setPastMissions] = useState<BriefingRow[]>([]);
   const [userEmail, setUserEmail] = useState<string>("");
-  const [showPastMissions, setShowPastMissions] = useState(false);
+  const [showNewMissionConfirm, setShowNewMissionConfirm] = useState(false);
   const [startingNew, setStartingNew] = useState(false);
+  const [showPastMissions, setShowPastMissions] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -163,15 +164,17 @@ export default function DashboardPage() {
     load();
   }, [router]);
 
-  async function handleStartNewMission() {
+  async function handleConfirmNewMission() {
     setStartingNew(true);
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
     // Archive current plan
     await supabase
       .from("plans")
       .update({ is_current: false })
-      .eq("user_id", userEmail ? (await supabase.auth.getUser()).data.user?.id || "" : "")
+      .eq("user_id", user.id)
       .eq("is_current", true);
 
     // Clear localStorage and go to briefing
@@ -361,9 +364,20 @@ export default function DashboardPage() {
                           {mDate} · {mDays > 90 ? "Completed" : mDays < 0 ? "Archived before launch" : `Day ${mDays}`}
                         </div>
                       </div>
-                      <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", flexShrink: 0 }}>
-                        Archived
-                      </span>
+                      <Link
+                        href={`/plan?briefing=${m.id}`}
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--color-teal)",
+                          textDecoration: "none",
+                          flexShrink: 0,
+                          padding: "4px 10px",
+                          border: "1px solid rgba(14,178,205,0.3)",
+                          borderRadius: "var(--radius)",
+                        }}
+                      >
+                        View plan
+                      </Link>
                     </div>
                   );
                 })}
@@ -372,13 +386,60 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* New mission confirmation dialog */}
+        {showNewMissionConfirm && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            padding: "1.5rem",
+          }}>
+            <div style={{
+              background: "var(--color-bg)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius)",
+              padding: "2rem",
+              maxWidth: "440px",
+              width: "100%",
+            }}>
+              <h2 style={{ fontSize: "1.3rem", marginBottom: "12px" }}>Start a new mission?</h2>
+              <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: "1.7", marginBottom: "8px" }}>
+                Your current mission — <strong style={{ color: "var(--color-text-primary)" }}>{briefing.role}</strong> — will be archived. You can still view it under "Past missions" on your dashboard.
+              </p>
+              <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: "1.7", marginBottom: "24px" }}>
+                Your Captain's Log entries and Ground Control check-ins are saved and will remain accessible.
+              </p>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  onClick={handleConfirmNewMission}
+                  disabled={startingNew}
+                  className="btn-primary"
+                  style={{ flex: 1, justifyContent: "center" }}
+                >
+                  {startingNew ? "Archiving..." : "Yes, start new mission"}
+                </button>
+                <button
+                  onClick={() => setShowNewMissionConfirm(false)}
+                  className="btn-secondary"
+                  style={{ flex: 1, justifyContent: "center" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)", flexWrap: "wrap", gap: "12px" }}>
           <span style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>{userEmail}</span>
           <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
             <button
-              onClick={handleStartNewMission}
-              disabled={startingNew}
+              onClick={() => setShowNewMissionConfirm(true)}
               style={{
                 fontSize: "13px",
                 color: "var(--color-teal)",
@@ -394,7 +455,7 @@ export default function DashboardPage() {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14M5 12h14"/>
               </svg>
-              {startingNew ? "Starting..." : "New mission"}
+              New mission
             </button>
             <button onClick={handleSignOut} className="back-link" style={{ fontSize: "13px" }}>
               Sign out
