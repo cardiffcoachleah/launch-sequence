@@ -544,55 +544,75 @@ export default function PlanPage() {
             </p>
           </div>
 
-          {/* Refresh plan */}
+          {/* Actions */}
           {isLoggedIn && (
             <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
-              <a
-                href="/plan-refresh"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "13px",
-                  color: "var(--color-text-tertiary)",
-                  textDecoration: "none",
-                  padding: "8px 0",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-tertiary)")}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="1 4 1 10 7 10"/>
-                  <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
-                </svg>
-                Refresh flight plan
-              </a>
-              <button
-                onClick={() => window.print()}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "13px",
-                  color: "var(--color-text-tertiary)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "8px 0",
-                  transition: "color 0.2s",
-                  width: "100%",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-tertiary)")}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="6 9 6 2 18 2 18 9"/>
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                  <rect x="6" y="14" width="12" height="8"/>
-                </svg>
-                Print / Save as PDF
-              </button>
+              <p className="eyebrow" style={{ marginBottom: "10px" }}>Actions</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <a
+                  href="/plan-refresh"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 12px",
+                    background: "var(--color-selection-bg)",
+                    border: "1px solid var(--color-border-subtle)",
+                    borderRadius: "var(--radius)",
+                    fontSize: "13px",
+                    color: "var(--color-text-secondary)",
+                    textDecoration: "none",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "var(--color-teal)";
+                    e.currentTarget.style.color = "var(--color-teal)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "var(--color-border-subtle)";
+                    e.currentTarget.style.color = "var(--color-text-secondary)";
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="1 4 1 10 7 10"/>
+                    <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+                  </svg>
+                  Refresh flight plan
+                </a>
+                <button
+                  onClick={() => window.print()}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 12px",
+                    background: "var(--color-selection-bg)",
+                    border: "1px solid var(--color-border-subtle)",
+                    borderRadius: "var(--radius)",
+                    fontSize: "13px",
+                    color: "var(--color-text-secondary)",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    width: "100%",
+                    textAlign: "left",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "var(--color-teal)";
+                    e.currentTarget.style.color = "var(--color-teal)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "var(--color-border-subtle)";
+                    e.currentTarget.style.color = "var(--color-text-secondary)";
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                  </svg>
+                  Print / Save as PDF
+                </button>
+              </div>
             </div>
           )}
         </aside>
