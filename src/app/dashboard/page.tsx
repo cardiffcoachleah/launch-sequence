@@ -245,19 +245,27 @@ export default function DashboardPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px", marginBottom: "2.5rem" }}>
 
           {/* Flight Plan */}
-          <Link href="/plan" style={{ textDecoration: "none" }}>
-            <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
+          <div style={{ textDecoration: "none" }}>
+            <div className="card" style={{ height: "100%" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                 <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(14,178,205,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-teal)", flexShrink: 0 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13"/><path d="M15 7v13"/></svg>
                 </div>
                 <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Flight plan</div>
               </div>
-              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
+              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: "0 0 12px" }}>
                 Your personalized 90-day transition plan. Review your actions and reflection prompts for each phase.
               </p>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <Link href="/plan" className="btn-primary" style={{ fontSize: "12px", padding: "6px 14px" }}>
+                  View plan
+                </Link>
+                <Link href="/plan-refresh" className="btn-secondary" style={{ fontSize: "12px", padding: "6px 14px" }}>
+                  Refresh
+                </Link>
+              </div>
             </div>
-          </Link>
+          </div>
 
           {/* Ground Control */}
           <Link href="/ground-control" style={{ textDecoration: "none" }}>
