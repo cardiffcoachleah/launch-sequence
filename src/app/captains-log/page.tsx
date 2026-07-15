@@ -12,6 +12,19 @@ interface LogEntry {
   prompt: string;
   entry: string;
   created_at: string;
+  action_title?: string;
+}
+
+interface Insight {
+  theme: string;
+  observation: string;
+  entries_referenced: number;
+}
+
+interface InsightResult {
+  insights: Insight[];
+  summary: string;
+  generated_at: string;
 }
 
 function getCurrentPhase(startDate: string): string {
@@ -38,15 +51,35 @@ const PHASE_LABELS: Record<string, string> = {
   act: "Days 61 to 90 — Act",
 };
 
+const phaseNumbers: Record<string, string> = {
+  t10: "T-10",
+  observe: "01\u201330",
+  orient: "31\u201360",
+  act: "61\u201390",
+};
+
+const THEME_COLORS = [
+  "var(--color-teal)",
+  "var(--color-mint)",
+  "var(--color-amber)",
+  "#a78bfa",
+  "#f472b6",
+];
+
 export default function CaptainsLogPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [currentPhase, setCurrentPhase] = useState("observe");
-  const [activeTab, setActiveTab] = useState<"write" | "history">("write");
+  const [activeTab, setActiveTab] = useState<"write" | "history" | "insights">("write");
   const [entryText, setEntryText] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Insights state
+  const [insights, setInsights] = useState<InsightResult | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -54,7 +87,6 @@ export default function CaptainsLogPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
 
-      // Get start date from briefing to determine current phase
       const { data: briefing } = await supabase
         .from("briefings")
         .select("start_date")
@@ -67,7 +99,6 @@ export default function CaptainsLogPage() {
         setCurrentPhase(getCurrentPhase(briefing.start_date));
       }
 
-      // Load existing entries
       const { data: logData } = await supabase
         .from("captains_log")
         .select("*")
@@ -109,6 +140,28 @@ export default function CaptainsLogPage() {
     setSaving(false);
   }
 
+  async function generateInsights() {
+    if (entries.length < 3) return;
+    setInsightsLoading(true);
+    setInsightsError("");
+
+    try {
+      const res = await fetch("/api/captains-log-insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entries }),
+      });
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || "Failed");
+      setInsights({ ...result, generated_at: new Date().toISOString() });
+    } catch (err) {
+      console.error(err);
+      setInsightsError("Something went wrong generating insights. Please try again.");
+    } finally {
+      setInsightsLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -119,6 +172,12 @@ export default function CaptainsLogPage() {
       </div>
     );
   }
+
+  const tabs = [
+    { id: "write", label: "New entry" },
+    { id: "history", label: `History${entries.length > 0 ? ` (${entries.length})` : ""}` },
+    { id: "insights", label: "Insights" },
+  ] as const;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -146,26 +205,25 @@ export default function CaptainsLogPage() {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: "4px", marginBottom: "2rem", borderBottom: "1px solid var(--color-border-subtle)", paddingBottom: "0" }}>
-          {(["write", "history"] as const).map((tab) => (
+        <div style={{ display: "flex", gap: "4px", marginBottom: "2rem", borderBottom: "1px solid var(--color-border-subtle)" }}>
+          {tabs.map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
               style={{
                 padding: "8px 16px",
                 fontSize: "14px",
                 fontWeight: 500,
-                color: activeTab === tab ? "var(--color-teal)" : "var(--color-text-tertiary)",
+                color: activeTab === tab.id ? "var(--color-teal)" : "var(--color-text-tertiary)",
                 background: "none",
                 border: "none",
-                borderBottom: activeTab === tab ? "2px solid var(--color-teal)" : "2px solid transparent",
+                borderBottom: activeTab === tab.id ? "2px solid var(--color-teal)" : "2px solid transparent",
                 cursor: "pointer",
                 transition: "all 0.2s",
                 marginBottom: "-1px",
-                textTransform: "capitalize",
               }}
             >
-              {tab === "write" ? "New entry" : `History${entries.length > 0 ? ` (${entries.length})` : ""}`}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -173,7 +231,6 @@ export default function CaptainsLogPage() {
         {/* Write tab */}
         {activeTab === "write" && (
           <div>
-            {/* Current phase indicator */}
             <div style={{ marginBottom: "1.5rem", padding: "12px 16px", background: "var(--color-bg-card)", border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius)", display: "flex", alignItems: "center", gap: "10px" }}>
               <span className="instrument" style={{ fontSize: "12px", color: "var(--color-teal)" }}>
                 {phaseNumbers[currentPhase] || "T-10"}
@@ -183,7 +240,6 @@ export default function CaptainsLogPage() {
               </span>
             </div>
 
-            {/* Reflection prompt */}
             <div className="card-warm" style={{ marginBottom: "1.5rem" }}>
               <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>This phase prompt</p>
               <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 400, fontStyle: "italic", color: "var(--color-text-primary)", lineHeight: "1.6", margin: 0 }}>
@@ -191,7 +247,6 @@ export default function CaptainsLogPage() {
               </p>
             </div>
 
-            {/* Free text entry */}
             <div style={{ marginBottom: "1rem" }}>
               <label style={{ fontSize: "14px", color: "var(--color-text-tertiary)", marginBottom: "8px", display: "block" }}>
                 Your notes — respond to the prompt above, or write whatever is on your mind.
@@ -206,11 +261,7 @@ export default function CaptainsLogPage() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <button
-                onClick={handleSave}
-                disabled={!entryText.trim() || saving}
-                className="btn-primary"
-              >
+              <button onClick={handleSave} disabled={!entryText.trim() || saving} className="btn-primary">
                 {saving ? "Saving..." : "Save entry"}
               </button>
               {saved && (
@@ -243,7 +294,7 @@ export default function CaptainsLogPage() {
                   const date = new Date(entry.created_at).toLocaleDateString("en-US", {
                     month: "short", day: "numeric", year: "numeric"
                   });
-                  const isActionNote = !!(entry as {action_title?: string}).action_title;
+                  const isActionNote = !!entry.action_title;
                   return (
                     <div key={entry.id} className="card">
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
@@ -253,7 +304,7 @@ export default function CaptainsLogPage() {
                           </span>
                           {isActionNote && (
                             <span style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>
-                              · {(entry as {action_title?: string}).action_title}
+                              · {entry.action_title}
                             </span>
                           )}
                         </div>
@@ -275,14 +326,120 @@ export default function CaptainsLogPage() {
           </div>
         )}
 
+        {/* Insights tab */}
+        {activeTab === "insights" && (
+          <div>
+            {entries.length < 3 ? (
+              <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+                <p style={{ color: "var(--color-text-tertiary)", fontSize: "15px", marginBottom: "8px" }}>
+                  You need at least 3 log entries before patterns start to emerge.
+                </p>
+                <p style={{ color: "var(--color-text-minimum)", fontSize: "13px", marginBottom: "24px" }}>
+                  You have {entries.length} {entries.length === 1 ? "entry" : "entries"} so far.
+                </p>
+                <button onClick={() => setActiveTab("write")} className="btn-secondary">
+                  Add an entry
+                </button>
+              </div>
+            ) : (
+              <div>
+                {/* Generate button */}
+                {!insights && !insightsLoading && (
+                  <div style={{ marginBottom: "2rem" }}>
+                    <div className="card" style={{ textAlign: "center", padding: "2rem" }}>
+                      <p style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "8px" }}>
+                        Ready to synthesize {entries.length} {entries.length === 1 ? "entry" : "entries"}
+                      </p>
+                      <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.6", marginBottom: "20px" }}>
+                        Your log will be analyzed for recurring themes, patterns, and observations you might not have noticed yourself.
+                      </p>
+                      <button onClick={generateInsights} className="btn-primary">
+                        Synthesize my log
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading */}
+                {insightsLoading && (
+                  <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+                    <div className="generating" style={{ marginBottom: "12px" }}>Reading your log...</div>
+                    <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
+                      Analyzing {entries.length} entries for themes and patterns. This takes about 15 seconds.
+                    </p>
+                  </div>
+                )}
+
+                {/* Error */}
+                {insightsError && (
+                  <div style={{ padding: "12px 16px", background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.35)", borderRadius: "var(--radius)", fontSize: "14px", color: "var(--color-amber)", marginBottom: "16px" }}>
+                    {insightsError}
+                  </div>
+                )}
+
+                {/* Results */}
+                {insights && !insightsLoading && (
+                  <div>
+                    {/* Summary */}
+                    <div className="card-warm" style={{ marginBottom: "1.5rem" }}>
+                      <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "10px" }}>Overall picture</p>
+                      <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 400, fontStyle: "italic", color: "var(--color-text-primary)", lineHeight: "1.7", margin: 0 }}>
+                        {insights.summary}
+                      </p>
+                    </div>
+
+                    {/* Themes */}
+                    <div style={{ marginBottom: "1.5rem" }}>
+                      <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "12px" }}>
+                        {insights.insights.length} pattern{insights.insights.length !== 1 ? "s" : ""} identified across your entries
+                      </p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {insights.insights.map((insight, i) => (
+                          <div key={i} className="card" style={{ borderLeft: `3px solid ${THEME_COLORS[i % THEME_COLORS.length]}` }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                              <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: `${THEME_COLORS[i % THEME_COLORS.length]}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "1px" }}>
+                                <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: THEME_COLORS[i % THEME_COLORS.length], fontWeight: 700 }}>
+                                  {i + 1}
+                                </span>
+                              </div>
+                              <div>
+                                <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)", marginBottom: "4px" }}>
+                                  {insight.theme}
+                                </div>
+                                <div style={{ fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6" }}>
+                                  {insight.observation}
+                                </div>
+                                <div style={{ marginTop: "6px", fontSize: "11px", color: "var(--color-text-minimum)", fontFamily: "var(--font-mono)" }}>
+                                  Referenced in {insight.entries_referenced} {insight.entries_referenced === 1 ? "entry" : "entries"}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Regenerate */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <p style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>
+                        Generated {new Date(insights.generated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                      <button
+                        onClick={generateInsights}
+                        className="btn-secondary"
+                        style={{ fontSize: "12px", padding: "6px 14px" }}
+                      >
+                        Refresh insights
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
 }
-
-const phaseNumbers: Record<string, string> = {
-  t10: "T-10",
-  observe: "01\u201330",
-  orient: "31\u201360",
-  act: "61\u201390",
-};
