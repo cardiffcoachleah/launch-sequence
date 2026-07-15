@@ -501,14 +501,16 @@ label {
     display: block !important;
   }
 
-  /* Phase sections */
+  /* Phase sections — each starts on a new page */
   .print-phase {
     page-break-before: always;
+    break-before: page;
     padding: 2rem 0;
   }
 
   .print-phase:first-child {
     page-break-before: auto;
+    break-before: auto;
   }
 
   /* Action cards */
