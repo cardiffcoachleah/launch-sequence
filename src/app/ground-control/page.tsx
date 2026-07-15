@@ -132,7 +132,14 @@ function EnergyTrendChart({ data }: { data: CheckIn[] }) {
         </svg>
 
         {/* Legend */}
-        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "8px", paddingTop: "8px", borderTop: "1px solid var(--color-border-subtle)" }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "6px 16px",
+          marginTop: "8px",
+          paddingTop: "8px",
+          borderTop: "1px solid var(--color-border-subtle)"
+        }}>
           {ENERGY_LEVELS.map((l) => (
             <div key={l.value} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
               <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: l.color, flexShrink: 0 }} />
