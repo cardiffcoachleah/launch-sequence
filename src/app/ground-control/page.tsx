@@ -22,6 +22,131 @@ const ENERGY_LEVELS = [
   { value: 4, label: "Firing on all cylinders", color: "var(--color-mint)" },
 ];
 
+const ENERGY_COLORS = ["", "#F5A623", "#c8a45a", "#0EB2CD", "#6AE8A4"];
+
+function EnergyTrendChart({ data }: { data: CheckIn[] }) {
+  if (data.length < 2) return null;
+
+  const sorted = [...data].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
+  const W = 600;
+  const H = 120;
+  const padX = 32;
+  const padY = 20;
+  const chartW = W - padX * 2;
+  const chartH = H - padY * 2;
+
+  const xStep = sorted.length > 1 ? chartW / (sorted.length - 1) : chartW;
+
+  function xPos(i: number) {
+    return padX + (sorted.length > 1 ? i * xStep : chartW / 2);
+  }
+
+  function yPos(level: number) {
+    return padY + chartH - ((level - 1) / 3) * chartH;
+  }
+
+  const points = sorted.map((d, i) => `${xPos(i)},${yPos(d.energy_level)}`).join(" ");
+
+  return (
+    <div style={{ marginBottom: "1.5rem" }}>
+      <p className="eyebrow" style={{ marginBottom: "12px" }}>Energy trend</p>
+      <div style={{
+        background: "var(--color-bg-card)",
+        border: "1px solid var(--color-border-subtle)",
+        borderRadius: "var(--radius)",
+        padding: "1rem",
+        overflowX: "auto",
+      }}>
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          width="100%"
+          preserveAspectRatio="xMidYMid meet"
+          aria-label="Energy level trend chart"
+          role="img"
+        >
+          {/* Y axis grid lines + labels */}
+          {[1, 2, 3, 4].map((level) => (
+            <g key={level}>
+              <line
+                x1={padX} y1={yPos(level)}
+                x2={W - padX} y2={yPos(level)}
+                stroke="rgba(14,178,205,0.1)"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+              />
+              <text
+                x={padX - 6}
+                y={yPos(level) + 4}
+                textAnchor="end"
+                fontSize="10"
+                fill={ENERGY_COLORS[level]}
+                fontFamily="var(--font-mono)"
+              >
+                {level}
+              </text>
+            </g>
+          ))}
+
+          {/* Filled area under line */}
+          <polygon
+            points={`${xPos(0)},${padY + chartH} ${points} ${xPos(sorted.length - 1)},${padY + chartH}`}
+            fill="rgba(14,178,205,0.06)"
+          />
+
+          {/* Line */}
+          <polyline
+            points={points}
+            fill="none"
+            stroke="#0EB2CD"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Data points */}
+          {sorted.map((d, i) => {
+            const cx = xPos(i);
+            const cy = yPos(d.energy_level);
+            const color = ENERGY_COLORS[d.energy_level];
+            const date = new Date(d.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            return (
+              <g key={d.id}>
+                <circle cx={cx} cy={cy} r="5" fill={color} stroke="#00001A" strokeWidth="2" />
+                {/* Date label below chart */}
+                <text
+                  x={cx}
+                  y={H - 4}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fill="rgba(255,255,255,0.3)"
+                  fontFamily="var(--font-mono)"
+                >
+                  {date}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Legend */}
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "8px", paddingTop: "8px", borderTop: "1px solid var(--color-border-subtle)" }}>
+          {ENERGY_LEVELS.map((l) => (
+            <div key={l.value} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: l.color, flexShrink: 0 }} />
+              <span style={{ fontSize: "11px", color: "var(--color-text-minimum)", fontFamily: "var(--font-mono)" }}>
+                {l.value} — {l.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GroundControlPage() {
   const router = useRouter();
   const [step, setStep] = useState<"form" | "response" | "history">("form");
@@ -44,7 +169,7 @@ export default function GroundControlPage() {
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (data) setHistory(data);
       setLoading(false);
@@ -57,7 +182,6 @@ export default function GroundControlPage() {
     setSubmitting(true);
 
     try {
-      // Get AI response
       const res = await fetch("/api/ground-control", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,17 +191,24 @@ export default function GroundControlPage() {
       const response = result.response || "Thank you for checking in.";
       setAiResponse(response);
 
-      // Save to Supabase
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from("systems_checks").insert({
-          user_id: user.id,
-          energy_level: energy,
-          weighing_on_you: weighing,
-          went_well: wentWell,
-          ai_response: response,
-        });
+        const { data: newEntry } = await supabase
+          .from("systems_checks")
+          .insert({
+            user_id: user.id,
+            energy_level: energy,
+            weighing_on_you: weighing,
+            went_well: wentWell,
+            ai_response: response,
+          })
+          .select()
+          .single();
+
+        if (newEntry) {
+          setHistory((prev) => [newEntry, ...prev]);
+        }
       }
 
       setStep("response");
@@ -130,7 +261,7 @@ export default function GroundControlPage() {
                   className="btn-secondary"
                   style={{ fontSize: "13px", padding: "8px 14px" }}
                 >
-                  {step === "history" ? "New check-in" : "View history"}
+                  {step === "history" ? "New check-in" : `History (${history.length})`}
                 </button>
               )}
               <Link href="/dashboard" className="back-link" style={{ fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -146,6 +277,11 @@ export default function GroundControlPage() {
         {/* Check-in form */}
         {step === "form" && (
           <div>
+            {/* Mini sparkline if history exists */}
+            {history.length >= 2 && (
+              <EnergyTrendChart data={history} />
+            )}
+
             {/* Energy level */}
             <div style={{ marginBottom: "2rem" }}>
               <p style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "12px" }}>
@@ -239,7 +375,6 @@ export default function GroundControlPage() {
         {/* AI Response */}
         {step === "response" && (
           <div>
-            {/* Energy display */}
             <div style={{ marginBottom: "1.5rem", padding: "14px 16px", background: "var(--color-bg-card)", border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius)", display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: "1.1rem", color: ENERGY_LEVELS[(energy || 1) - 1].color }}>
                 {energy} / 4
@@ -249,7 +384,6 @@ export default function GroundControlPage() {
               </div>
             </div>
 
-            {/* AI reflection */}
             <div className="card-warm" style={{ marginBottom: "2rem" }}>
               <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "12px" }}>
                 Ground control responds
@@ -284,27 +418,33 @@ export default function GroundControlPage() {
             {history.length === 0 ? (
               <p style={{ color: "var(--color-text-tertiary)", fontSize: "14px" }}>No check-ins yet.</p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {history.map((item) => {
-                  const energyInfo = ENERGY_LEVELS[(item.energy_level || 1) - 1];
-                  const date = new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-                  return (
-                    <div key={item.id} className="card">
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                        <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: energyInfo.color }}>
-                          {item.energy_level} / 4 — {energyInfo.label}
+              <>
+                <EnergyTrendChart data={history} />
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {history.map((item) => {
+                    const energyInfo = ENERGY_LEVELS[(item.energy_level || 1) - 1];
+                    const date = new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                    return (
+                      <div key={item.id} className="card">
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: energyInfo.color }} />
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: energyInfo.color }}>
+                              {item.energy_level} / 4 — {energyInfo.label}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>{date}</div>
                         </div>
-                        <div style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>{date}</div>
+                        {item.ai_response && (
+                          <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.6", fontStyle: "italic", margin: 0 }}>
+                            {item.ai_response}
+                          </p>
+                        )}
                       </div>
-                      {item.ai_response && (
-                        <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.6", fontStyle: "italic", margin: 0 }}>
-                          {item.ai_response}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}
