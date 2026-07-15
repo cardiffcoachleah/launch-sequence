@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import { createClient } from "@/lib/supabase/client";
 
@@ -138,6 +138,8 @@ function getPhaseProgress(phase: PlanPhase, phaseKey: string, statusMap: StatusM
 
 export default function PlanPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const briefingId = searchParams.get("briefing");
   const [plan, setPlan] = useState<Plan | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -160,6 +162,34 @@ export default function PlanPage() {
 
   useEffect(() => {
     async function loadPlan() {
+
+      // If viewing a past mission via ?briefing=ID, load that specific plan
+      if (briefingId) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setIsLoggedIn(true);
+          const { data: planRow } = await supabase
+            .from("plans")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("briefing_id", briefingId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+          if (planRow?.plan_data) {
+            setPlan(planRow.plan_data as Plan);
+            setPlanId(planRow.id);
+            loadStatuses(user.id, planRow.id);
+            loadNotes(user.id, planRow.id);
+            setLoading(false);
+            return;
+          }
+        }
+        router.push("/dashboard");
+        return;
+      }
       const stored = localStorage.getItem("launchsequence_plan");
 
       // Check if we're returning from an add flow with ripple context
@@ -440,6 +470,18 @@ export default function PlanPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
+
+      {/* Past mission banner */}
+      {briefingId && (
+        <div style={{ background: "rgba(245,166,35,0.06)", borderBottom: "1px solid rgba(245,166,35,0.2)", padding: "10px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
+          <p style={{ fontSize: "13px", color: "var(--color-amber)", margin: 0 }}>
+            You are viewing an archived mission.
+          </p>
+          <Link href="/dashboard" style={{ fontSize: "13px", color: "var(--color-amber)", textDecoration: "none", flexShrink: 0 }}>
+            Back to current mission
+          </Link>
+        </div>
+      )}
 
       {/* Save banner */}
       {!isLoggedIn && saveStatus !== "sent" && (
