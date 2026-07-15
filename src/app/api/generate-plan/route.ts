@@ -116,12 +116,14 @@ Category must be exactly one of: "relationships", "strategy", "self", "logistics
 T-10 phase: 3-5 actions. Observe, Orient, Act phases: 4-6 actions each.
 All actions must be tailored to this person's specific transition type, seniority change, function, level, company stage, team situation, and stated concerns.`;
 
+    const isFirstJob = briefing.transition_type === "This is my first job";
+
     const userPrompt = `Generate a personalized 90-day transition plan for this person:
 
 TRANSITION TYPE: ${briefing.transition_type}
-SENIORITY CHANGE: ${briefing.seniority_change || "Not specified"}
+${isFirstJob ? "NOTE: This person is starting their very first job. Apply the FIRST JOB FRAMEWORK. Do not apply any other transition type framework." : `SENIORITY CHANGE: ${briefing.seniority_change || "Not specified"}`}
 FUNCTION: ${briefing.function_area}
-LEVEL: ${briefing.level}
+LEVEL: ${briefing.level || "Entry level / First role"}
 COMPANY STAGE: ${briefing.company_stage}
 ${briefing.company_stage_detail ? `ADDITIONAL COMPANY CONTEXT: ${briefing.company_stage_detail}` : ""}
 TEAM SITUATION: ${briefing.team_situation}
@@ -133,7 +135,10 @@ START DATE: ${briefing.start_date}
 BIGGEST CONCERN: ${briefing.biggest_concern}
 WHAT SUCCESS LOOKS LIKE AT 90 DAYS: ${briefing.what_success_looks_like}
 
-The TRANSITION TYPE combined with SENIORITY CHANGE is the primary lens. If seniority change is "Stepping up," this person is navigating both a new context AND new altitude — treat this as the harder, higher-stakes scenario.`;
+${isFirstJob
+  ? "Apply the FIRST JOB FRAMEWORK. This person has no prior professional context. Make the plan warm, specific, and human. Focus on learning how professional environments work, not on leadership strategy."
+  : "The TRANSITION TYPE combined with SENIORITY CHANGE is the primary lens. If seniority change is \"Stepping up,\" this person is navigating both a new context AND new altitude — treat this as the harder, higher-stakes scenario."
+}`;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
