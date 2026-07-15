@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Nav from "@/components/Nav";
 import { createClient } from "@/lib/supabase/client";
 
