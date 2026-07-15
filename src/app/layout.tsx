@@ -4,13 +4,18 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Launch Sequence — Your first 90 days, planned before day one",
   description:
-    "An AI-powered transition companion for leaders stepping into new roles. Personalized plans, wellbeing check-ins, and structured feedback from T-10 to stable orbit.",
+    "An AI-powered transition companion for leaders stepping into something new. New job, promotion, or career pivot. From T-10 to stable orbit.",
   openGraph: {
     title: "Launch Sequence",
     description:
       "Your first 90 days, planned before day one. For leaders in transition.",
     type: "website",
     url: "https://launchsequence.io",
+    images: [{ url: "/icon-512.png", width: 512, height: 512 }],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
 };
 
