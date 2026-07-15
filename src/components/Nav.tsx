@@ -35,14 +35,26 @@ export default function Nav() {
       background: "var(--color-bg)",
     }}>
       <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-        <span className="instrument" style={{
-          fontSize: "11px",
-          letterSpacing: "0.12em",
-          color: "var(--color-teal)",
+        <span style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "28px",
+          height: "28px",
           border: "1px solid rgba(14,178,205,0.4)",
-          padding: "4px 8px",
-          borderRadius: "var(--radius)",
-        }}>LS</span>
+          borderRadius: "4px",
+          overflow: "hidden",
+          flexShrink: 0,
+        }}>
+          <span className="instrument" style={{
+            fontSize: "11px",
+            fontWeight: 700,
+            color: "var(--color-teal)",
+            display: "inline-block",
+            transform: "skewX(-30deg)",
+            letterSpacing: "-0.02em",
+          }}>LS</span>
+        </span>
         <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>
           Launch Sequence
         </span>
