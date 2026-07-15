@@ -147,6 +147,10 @@ export default function PlanPage() {
   const [expandedNote, setExpandedNote] = useState<string | null>(null);
   const [noteText, setNoteText] = useState<Record<string, string>>({});
   const [savingNote, setSavingNote] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [saveEmail, setSaveEmail] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [saveError, setSaveError] = useState<string>("");
@@ -307,6 +311,31 @@ export default function PlanPage() {
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,plan_id,phase,action_index" });
   }, [planId, isLoggedIn, statusMap]);
+
+  async function saveEdit(phase: string, index: number) {
+    if (!plan || !planId || savingEdit) return;
+    setSavingEdit(true);
+
+    // Update plan data in memory
+    const updatedPlan = JSON.parse(JSON.stringify(plan)) as Plan;
+    updatedPlan[phase as keyof Plan].actions[index].title = editTitle;
+    updatedPlan[phase as keyof Plan].actions[index].description = editDescription;
+
+    // Optimistic update
+    setPlan(updatedPlan);
+    setEditingKey(null);
+
+    // Save to Supabase
+    const supabase = createClient();
+    await supabase
+      .from("plans")
+      .update({ plan_data: updatedPlan })
+      .eq("id", planId);
+
+    // Update localStorage
+    localStorage.setItem("launchsequence_plan", JSON.stringify(updatedPlan));
+    setSavingEdit(false);
+  }
 
   async function handleSavePlan() {
     if (!saveEmail.trim() || !plan) return;
@@ -519,13 +548,13 @@ export default function PlanPage() {
               return (
                 <div
                   key={i}
-                  onClick={() => cycleStatus(activePhase, i)}
+                  onClick={() => editingKey !== statusKey && cycleStatus(activePhase, i)}
                   style={{
                     background: cat.bg,
                     border: `1px solid ${isDone ? "rgba(106,232,164,0.3)" : isNA ? "var(--color-border-subtle)" : cat.border}`,
                     borderRadius: "var(--radius)",
                     padding: "1rem",
-                    cursor: isLoggedIn ? "pointer" : "default",
+                    cursor: isLoggedIn && editingKey !== statusKey ? "pointer" : "default",
                     transition: "all 0.2s",
                     opacity: isNA ? 0.4 : 1,
                   }}
@@ -556,29 +585,98 @@ export default function PlanPage() {
 
                     {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
-                        <div style={{
-                          fontSize: "14px",
-                          fontWeight: 500,
-                          color: isDimmed ? "var(--color-text-tertiary)" : "var(--color-text-primary)",
-                          textDecoration: isDone ? "line-through" : "none",
-                          transition: "all 0.2s",
-                        }}>
-                          {action.title}
+                      {editingKey === statusKey ? (
+                        /* Edit mode */
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            style={{ marginBottom: "8px", fontSize: "14px", fontWeight: 500, padding: "6px 10px" }}
+                            autoFocus
+                          />
+                          <textarea
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            rows={3}
+                            style={{ marginBottom: "10px", fontSize: "13px", resize: "none" }}
+                          />
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <button
+                              onClick={() => saveEdit(activePhase, i)}
+                              disabled={!editTitle.trim() || savingEdit}
+                              className="btn-primary"
+                              style={{ padding: "5px 14px", fontSize: "12px" }}
+                            >
+                              {savingEdit ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              onClick={() => setEditingKey(null)}
+                              className="back-link"
+                              style={{ fontSize: "12px" }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
-                        {isLoggedIn && (
-                          <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: statusConfig.color, flexShrink: 0, marginTop: "2px" }}>
-                            {statusConfig.label}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: "13px", color: isDimmed ? "var(--color-text-minimum)" : "var(--color-text-secondary)", lineHeight: "1.6", transition: "color 0.2s" }}>
-                        {action.description}
-                      </div>
-                      <div className="action-category-label" style={{ color: cat.color }}>
-                        <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
-                        {cat.label}
-                      </div>
+                      ) : (
+                        /* Read mode */
+                        <>
+                          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
+                            <div style={{
+                              fontSize: "14px",
+                              fontWeight: 500,
+                              color: isDimmed ? "var(--color-text-tertiary)" : "var(--color-text-primary)",
+                              textDecoration: isDone ? "line-through" : "none",
+                              transition: "all 0.2s",
+                            }}>
+                              {action.title}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                              {isLoggedIn && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingKey(statusKey);
+                                    setEditTitle(action.title);
+                                    setEditDescription(action.description);
+                                  }}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    padding: "2px",
+                                    color: "var(--color-text-minimum)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    transition: "color 0.2s",
+                                  }}
+                                  title="Edit this action"
+                                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
+                                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-minimum)")}
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                  </svg>
+                                </button>
+                              )}
+                              {isLoggedIn && (
+                                <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: statusConfig.color, marginTop: "2px" }}>
+                                  {statusConfig.label}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: "13px", color: isDimmed ? "var(--color-text-minimum)" : "var(--color-text-secondary)", lineHeight: "1.6", transition: "color 0.2s" }}>
+                            {action.description}
+                          </div>
+                          <div className="action-category-label" style={{ color: cat.color }}>
+                            <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
+                            {cat.label}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
