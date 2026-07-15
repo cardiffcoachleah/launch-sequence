@@ -151,7 +151,7 @@ export default function PlanPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
-  const [ripples, setRipples] = useState<{ action_title: string; reason: string }[]>([]);
+  const [ripples, setRipples] = useState<{ action_title: string; phase?: string; reason: string }[]>([]);
   const [rippleKey, setRippleKey] = useState<string | null>(null);
   const [saveEmail, setSaveEmail] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -806,7 +806,14 @@ export default function PlanPage() {
                       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                         {ripples.map((r, ri) => (
                           <div key={ri} style={{ paddingLeft: "10px", borderLeft: "2px solid rgba(245,166,35,0.35)" }}>
-                            <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "1px" }}>{r.action_title}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "1px" }}>
+                              {r.phase && (
+                                <span style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--color-teal)", background: "rgba(14,178,205,0.1)", padding: "1px 5px", borderRadius: "2px", flexShrink: 0 }}>
+                                  {r.phase === "t10" ? "T-10" : r.phase === "observe" ? "01–30" : r.phase === "orient" ? "31–60" : "61–90"}
+                                </span>
+                              )}
+                              <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--color-text-primary)" }}>{r.action_title}</div>
+                            </div>
                             <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{r.reason}</div>
                           </div>
                         ))}
@@ -839,7 +846,14 @@ export default function PlanPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {ripples.map((r, ri) => (
                     <div key={ri} style={{ paddingLeft: "12px", borderLeft: "2px solid rgba(245,166,35,0.4)" }}>
-                      <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>{r.action_title}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                        {r.phase && (
+                          <span style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--color-teal)", background: "rgba(14,178,205,0.1)", padding: "1px 5px", borderRadius: "2px", flexShrink: 0 }}>
+                            {r.phase === "t10" ? "T-10" : r.phase === "observe" ? "01–30" : r.phase === "orient" ? "31–60" : "61–90"}
+                          </span>
+                        )}
+                        <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)" }}>{r.action_title}</div>
+                      </div>
                       <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{r.reason}</div>
                     </div>
                   ))}
