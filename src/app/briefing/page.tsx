@@ -61,6 +61,10 @@ const STEPS = [
         value: "New career path or function",
         description: "Stepping into a discipline or field that is largely new territory for you.",
       },
+      {
+        value: "This is my first job",
+        description: "You are starting your professional life. Everything is new — the role, the environment, the unwritten rules.",
+      },
     ],
     field: "transition_type" as keyof BriefingData,
     showAlways: true,
@@ -94,6 +98,7 @@ const STEPS = [
     sublabel: "This helps us calibrate the scope and stakes of your transition.",
     type: "cards" as const,
     options: [
+      { value: "Entry level / Graduate / First role", description: "" },
       { value: "IC — Junior (early career, 0 to 3 years)", description: "" },
       { value: "IC — Mid-level (3 to 7 years)", description: "" },
       { value: "IC — Senior / Staff / Principal", description: "" },
@@ -108,7 +113,8 @@ const STEPS = [
       { value: "Founder / CEO", description: "" },
     ],
     field: "level" as keyof BriefingData,
-    showAlways: true,
+    showWhen: (data: BriefingData) => data.transition_type !== "This is my first job",
+    showAlways: false,
   },
   {
     id: "company_stage",
@@ -286,18 +292,26 @@ export default function BriefingPage() {
     if (isLastStep) {
       setIsGenerating(true);
       setError(null);
+
+      // Auto-set level for first job
+      const finalData = { ...data };
+      if (finalData.transition_type === "This is my first job") {
+        finalData.level = "Entry level / Graduate / First role";
+        finalData.seniority_change = "First job — no previous role to compare";
+      }
+
       try {
         const res = await fetch("/api/generate-plan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(finalData),
         });
         const result = await res.json();
         if (!res.ok || result.error) {
           throw new Error(result.error || `Server error ${res.status}`);
         }
         localStorage.setItem("launchsequence_plan", JSON.stringify(result));
-        localStorage.setItem("launchsequence_briefing", JSON.stringify(data));
+        localStorage.setItem("launchsequence_briefing", JSON.stringify(finalData));
         router.push("/plan");
       } catch (err) {
         console.error("Plan generation failed:", err);
