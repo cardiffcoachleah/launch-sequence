@@ -151,6 +151,8 @@ export default function PlanPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [ripples, setRipples] = useState<{ action_title: string; reason: string }[]>([]);
+  const [rippleKey, setRippleKey] = useState<string | null>(null);
   const [saveEmail, setSaveEmail] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [saveError, setSaveError] = useState<string>("");
@@ -159,6 +161,37 @@ export default function PlanPage() {
   useEffect(() => {
     async function loadPlan() {
       const stored = localStorage.getItem("launchsequence_plan");
+
+      // Check if we're returning from an add flow with ripple context
+      const rippleContext = localStorage.getItem("launchsequence_ripple_context");
+      if (rippleContext) {
+        localStorage.removeItem("launchsequence_ripple_context");
+        try {
+          const ctx = JSON.parse(rippleContext);
+          if (stored && ctx.change_type === "add") {
+            const parsedPlan = JSON.parse(stored);
+            setPlan(parsedPlan);
+            setLoading(false);
+            // Trigger ripple check in background
+            fetch("/api/plan-ripple", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                change_type: "add",
+                change_description: ctx.change_description,
+                phase: ctx.phase,
+                full_plan: parsedPlan,
+              }),
+            }).then((r) => r.json()).then((result) => {
+              if (result.ripples?.length > 0) {
+                setRipples(result.ripples);
+                setRippleKey("add_ripple");
+              }
+            }).catch(() => {});
+          }
+        } catch { /* ignore */ }
+      }
+
       if (stored) {
         try {
           setPlan(JSON.parse(stored));
@@ -316,6 +349,15 @@ export default function PlanPage() {
     if (!plan || !planId || savingEdit) return;
     setSavingEdit(true);
 
+    const originalTitle = plan[phase as keyof Plan].actions[index].title;
+    const originalDesc = plan[phase as keyof Plan].actions[index].description;
+
+    // Only run ripple check if something meaningful changed
+    const titleChanged = editTitle !== originalTitle;
+    const descChanged = editDescription.length > 10 &&
+      Math.abs(editDescription.length - originalDesc.length) > 10;
+    const meaningful = titleChanged || descChanged;
+
     // Update plan data in memory
     const updatedPlan = JSON.parse(JSON.stringify(plan)) as Plan;
     updatedPlan[phase as keyof Plan].actions[index].title = editTitle;
@@ -324,6 +366,8 @@ export default function PlanPage() {
     // Optimistic update
     setPlan(updatedPlan);
     setEditingKey(null);
+    setRipples([]);
+    setRippleKey(null);
 
     // Save to Supabase
     const supabase = createClient();
@@ -335,6 +379,31 @@ export default function PlanPage() {
     // Update localStorage
     localStorage.setItem("launchsequence_plan", JSON.stringify(updatedPlan));
     setSavingEdit(false);
+
+    // Run ripple check if change was meaningful
+    if (meaningful) {
+      const key = getStatusKey(phase, index);
+      try {
+        const res = await fetch("/api/plan-ripple", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            change_type: "edit",
+            change_description: `Changed "${originalTitle}" to "${editTitle}"`,
+            changed_action: editTitle,
+            phase,
+            full_plan: updatedPlan,
+          }),
+        });
+        const result = await res.json();
+        if (result.ripples?.length > 0) {
+          setRipples(result.ripples);
+          setRippleKey(key);
+        }
+      } catch {
+        // Ripple check is non-critical, fail silently
+      }
+    }
   }
 
   async function handleSavePlan() {
@@ -744,6 +813,45 @@ export default function PlanPage() {
               );
             })}
           </div>
+
+          {/* Ripple notification */}
+          {ripples.length > 0 && rippleKey && (
+            <div style={{
+              marginBottom: "1.5rem",
+              padding: "14px 16px",
+              background: "rgba(245,166,35,0.06)",
+              border: "1px solid rgba(245,166,35,0.3)",
+              borderRadius: "var(--radius)",
+            }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "10px" }}>
+                <p className="eyebrow" style={{ color: "var(--color-amber)", margin: 0 }}>
+                  Things to consider
+                </p>
+                <button
+                  onClick={() => { setRipples([]); setRippleKey(null); }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "18px", lineHeight: 1, padding: 0, flexShrink: 0 }}
+                  aria-label="Dismiss"
+                >
+                  &times;
+                </button>
+              </div>
+              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "10px", lineHeight: "1.5" }}>
+                Based on what you changed, these existing actions might be worth revisiting:
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {ripples.map((r, i) => (
+                  <div key={i} style={{ paddingLeft: "12px", borderLeft: "2px solid rgba(245,166,35,0.4)" }}>
+                    <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                      {r.action_title}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>
+                      {r.reason}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Reflection prompt */}
           <div className="card-warm">
