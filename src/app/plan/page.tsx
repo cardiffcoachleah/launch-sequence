@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Nav from "@/components/Nav";
@@ -137,7 +137,7 @@ function getPhaseProgress(phase: PlanPhase, phaseKey: string, statusMap: StatusM
   return { done, total, percent: Math.round((done / total) * 100) };
 }
 
-export default function PlanPage() {
+function PlanPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const briefingId = searchParams.get("briefing");
@@ -1008,5 +1008,19 @@ export default function PlanPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function PlanPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="generating">Loading flight plan...</div>
+        </div>
+      </div>
+    }>
+      <PlanPageInner />
+    </Suspense>
   );
 }
