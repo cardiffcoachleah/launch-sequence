@@ -450,6 +450,33 @@ export default function PlanPage() {
               Click any action to cycle its status.
             </p>
           </div>
+
+          {/* Refresh plan */}
+          {isLoggedIn && (
+            <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
+              <a
+                href="/plan-refresh"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontSize: "13px",
+                  color: "var(--color-text-tertiary)",
+                  textDecoration: "none",
+                  padding: "8px 0",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-tertiary)")}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+                </svg>
+                Refresh flight plan
+              </a>
+            </div>
+          )}
         </aside>
 
         {/* Main content */}
