@@ -474,3 +474,78 @@ label {
   background: var(--color-scrollbar);
   border-radius: 3px;
 }
+
+/* ============================================
+   PRINT STYLES — Flight Plan PDF/Print
+   ============================================ */
+
+@media print {
+  /* Force light background regardless of theme */
+  html, body {
+    background: #ffffff !important;
+    color: #00001A !important;
+    font-size: 12pt;
+  }
+
+  /* Hide everything except the main plan content */
+  nav,
+  aside,
+  .no-print,
+  [class*="banner"],
+  [class*="save"] {
+    display: none !important;
+  }
+
+  /* Show all phases at once — no tab navigation */
+  .print-all-phases {
+    display: block !important;
+  }
+
+  /* Phase sections */
+  .print-phase {
+    page-break-before: always;
+    padding: 2rem 0;
+  }
+
+  .print-phase:first-child {
+    page-break-before: auto;
+  }
+
+  /* Action cards */
+  .card {
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+    break-inside: avoid;
+    margin-bottom: 8pt;
+  }
+
+  /* Reflection cards */
+  .card-warm {
+    background: #fff8ee !important;
+    border: 1px solid #f0d080 !important;
+    break-inside: avoid;
+  }
+
+  /* Typography */
+  h1 { font-size: 20pt; }
+  h2 { font-size: 16pt; }
+  h3 { font-size: 13pt; }
+
+  /* Hide status icons, notes, and ripple in print */
+  .action-category-label,
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Header */
+  .print-header {
+    border-bottom: 2pt solid #0EB2CD;
+    padding-bottom: 12pt;
+    margin-bottom: 20pt;
+  }
+
+  /* Footer */
+  @page {
+    margin: 1.5cm 2cm;
+  }
+}
