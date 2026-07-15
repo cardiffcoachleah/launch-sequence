@@ -350,20 +350,13 @@ export default function PlanPage() {
     setSavingEdit(true);
 
     const originalTitle = plan[phase as keyof Plan].actions[index].title;
-    const originalDesc = plan[phase as keyof Plan].actions[index].description;
-
-    // Only run ripple check if something meaningful changed
-    const titleChanged = editTitle !== originalTitle;
-    const descChanged = editDescription.length > 10 &&
-      Math.abs(editDescription.length - originalDesc.length) > 10;
-    const meaningful = titleChanged || descChanged;
 
     // Update plan data in memory
     const updatedPlan = JSON.parse(JSON.stringify(plan)) as Plan;
     updatedPlan[phase as keyof Plan].actions[index].title = editTitle;
     updatedPlan[phase as keyof Plan].actions[index].description = editDescription;
 
-    // Optimistic update
+    // Optimistic update — close editor, clear old ripples
     setPlan(updatedPlan);
     setEditingKey(null);
     setRipples([]);
@@ -376,33 +369,35 @@ export default function PlanPage() {
       .update({ plan_data: updatedPlan })
       .eq("id", planId);
 
-    // Update localStorage
     localStorage.setItem("launchsequence_plan", JSON.stringify(updatedPlan));
     setSavingEdit(false);
 
-    // Run ripple check if change was meaningful
-    if (meaningful) {
-      const key = getStatusKey(phase, index);
-      try {
-        const res = await fetch("/api/plan-ripple", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            change_type: "edit",
-            change_description: `Changed "${originalTitle}" to "${editTitle}"`,
-            changed_action: editTitle,
-            phase,
-            full_plan: updatedPlan,
-          }),
-        });
-        const result = await res.json();
-        if (result.ripples?.length > 0) {
-          setRipples(result.ripples);
-          setRippleKey(key);
-        }
-      } catch {
-        // Ripple check is non-critical, fail silently
+    // Always run ripple check after any edit
+    const key = getStatusKey(phase, index);
+    setRippleKey(`${key}_checking`); // shows loading state
+    try {
+      const res = await fetch("/api/plan-ripple", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          change_type: "edit",
+          change_description: editTitle !== originalTitle
+            ? `Changed "${originalTitle}" to "${editTitle}"`
+            : `Updated description of "${editTitle}"`,
+          changed_action: editTitle,
+          phase,
+          full_plan: updatedPlan,
+        }),
+      });
+      const result = await res.json();
+      if (result.ripples?.length > 0) {
+        setRipples(result.ripples);
+        setRippleKey(key);
+      } else {
+        setRippleKey(null); // nothing to show
       }
+    } catch {
+      setRippleKey(null);
     }
   }
 
@@ -781,6 +776,13 @@ export default function PlanPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Ripple checking indicator */}
+                  {rippleKey === `${statusKey}_checking` && (
+                    <div style={{ marginTop: "4px", padding: "8px 14px", fontSize: "11px", color: "var(--color-text-minimum)", fontFamily: "var(--font-mono)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span className="generating" style={{ fontSize: "11px" }}>Checking for ripple effects...</span>
+                    </div>
+                  )}
 
                   {/* Ripple notification — appears directly below the edited card */}
                   {showRipple && (
