@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 import Link from "next/link";
 import CoachingCTA from "@/components/CoachingCTA";
 
@@ -596,6 +597,7 @@ export default function DashboardPage() {
         </div>
 
       </div>
+      <Footer />
     </div>
   );
 }
