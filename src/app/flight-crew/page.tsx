@@ -43,12 +43,21 @@ function getStatusStyle(status: string) {
   return STATUS_OPTIONS.find((s) => s.value === status) || { label: status, color: "var(--color-text-minimum)" };
 }
 
-const EMPTY_FORM = {
+type FormData = {
+  name: string;
+  role: string;
+  context: string;
+  referred_by: string;
+  status: "to_meet" | "connected" | "ongoing";
+  notes: string;
+};
+
+const EMPTY_FORM: FormData = {
   name: "",
   role: "",
   context: "team",
   referred_by: "",
-  status: "to_meet" as const,
+  status: "to_meet",
   notes: "",
 };
 
@@ -60,7 +69,7 @@ export default function FlightCrewPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<string>("all");
 
@@ -147,14 +156,15 @@ export default function FlightCrewPage() {
   }
 
   function startEdit(member: CrewMember) {
-    setForm({
+    const formData: FormData = {
       name: member.name,
       role: member.role || "",
       context: member.context || "team",
       referred_by: member.referred_by || "",
-      status: member.status as "to_meet" | "connected" | "ongoing",
+      status: member.status,
       notes: member.notes || "",
-    });
+    };
+    setForm(formData);
     setEditingId(member.id);
     setShowAddForm(true);
     setExpandedId(null);
