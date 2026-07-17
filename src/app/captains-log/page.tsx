@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import VoiceInput from "@/components/VoiceInput";
 
 interface LogEntry {
   id: string;
@@ -287,15 +288,20 @@ export default function CaptainsLogPage() {
             )}
 
             <div style={{ marginBottom: "1rem" }}>
-              <textarea
-                value={entryText}
-                onChange={(e) => setEntryText(e.target.value)}
-                placeholder={writeMode === "reflection"
-                  ? "Take your time with this one. What is true for you right now?"
-                  : "What are you noticing? What happened today? What do you want to remember?"}
-                rows={writeMode === "reflection" ? 8 : 6}
-                style={{ resize: "vertical", minHeight: "160px" }}
-              />
+              <div style={{ position: "relative" }}>
+                <textarea
+                  value={entryText}
+                  onChange={(e) => setEntryText(e.target.value)}
+                  placeholder={writeMode === "reflection"
+                    ? "Take your time with this one. What is true for you right now?"
+                    : "What are you noticing? What happened today? What do you want to remember?"}
+                  rows={writeMode === "reflection" ? 8 : 6}
+                  style={{ resize: "vertical", minHeight: "160px", paddingRight: "44px" }}
+                />
+                <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
+                  <VoiceInput onTranscript={(t) => setEntryText((prev) => (prev ? prev + " " : "") + t)} />
+                </div>
+              </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
