@@ -1,6 +1,7 @@
 "use client";
 
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 import Link from "next/link";
 import CoachingCTA from "@/components/CoachingCTA";
 
@@ -179,6 +180,7 @@ export default function AboutPage() {
         </div>
 
       </div>
+      <Footer />
     </div>
   );
 }
