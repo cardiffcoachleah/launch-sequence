@@ -420,8 +420,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        </div>
-
         {/* Coaching CTA */}
         <div style={{
           padding: "16px 20px",
