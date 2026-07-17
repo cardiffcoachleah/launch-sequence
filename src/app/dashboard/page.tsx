@@ -345,7 +345,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Action cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px", marginBottom: "2.5rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "2.5rem" }}>
 
           <Link href="/plan" style={{ textDecoration: "none" }}>
             <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
@@ -388,6 +388,25 @@ export default function DashboardPage() {
               </div>
               <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
                 Notes, observations, and reflections as you go.
+              </p>
+            </div>
+          </Link>
+
+          <Link href="/flight-crew" style={{ textDecoration: "none" }}>
+            <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(167,139,250,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a78bfa", flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Flight crew</div>
+              </div>
+              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
+                The people who matter to this transition. Track who to meet and what you are learning.
               </p>
             </div>
           </Link>
