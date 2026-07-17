@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import { createClient } from "@/lib/supabase/client";
+import CoachingCTA from "@/components/CoachingCTA";
 
 interface PlanAction {
   title: string;
@@ -670,6 +671,9 @@ function PlanPageInner() {
                   </svg>
                   Print / Save as PDF
                 </button>
+              </div>
+              <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--color-border-subtle)" }}>
+                <CoachingCTA trigger="link" label="Work with Leah" context="plan" />
               </div>
             </div>
           )}
