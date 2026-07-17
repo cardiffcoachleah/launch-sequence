@@ -23,6 +23,12 @@ interface PlanRow {
   is_current: boolean;
 }
 
+interface CheckIn {
+  id: string;
+  energy_level: number;
+  created_at: string;
+}
+
 function getDaysFromStart(startDate: string): number {
   const start = new Date(startDate);
   const today = new Date();
@@ -43,6 +49,68 @@ function getPhaseProgress(days: number): number {
   return 75 + Math.min((days - 60) / 30, 1) * 25;
 }
 
+const ENERGY_COLORS = ["", "#F5A623", "#c8a45a", "#0EB2CD", "#6AE8A4"];
+
+function MiniSparkline({ data }: { data: CheckIn[] }) {
+  if (data.length < 2) {
+    // Just show the last energy level as a colored dot
+    const last = data[0];
+    if (!last) return null;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "5px", marginTop: "6px" }}>
+        <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: ENERGY_COLORS[last.energy_level], flexShrink: 0 }} />
+        <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: ENERGY_COLORS[last.energy_level] }}>
+          {last.energy_level}/4 last check-in
+        </span>
+      </div>
+    );
+  }
+
+  const W = 120;
+  const H = 32;
+  const padX = 4;
+  const padY = 4;
+  const chartW = W - padX * 2;
+  const chartH = H - padY * 2;
+  const xStep = chartW / (data.length - 1);
+
+  const points = data.map((d, i) => {
+    const x = padX + i * xStep;
+    const y = padY + chartH - ((d.energy_level - 1) / 3) * chartH;
+    return `${x},${y}`;
+  }).join(" ");
+
+  const last = data[data.length - 1];
+
+  return (
+    <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-label="Energy trend sparkline">
+        <polyline
+          points={points}
+          fill="none"
+          stroke="var(--color-teal)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.6"
+        />
+        {data.map((d, i) => (
+          <circle
+            key={d.id}
+            cx={padX + i * xStep}
+            cy={padY + chartH - ((d.energy_level - 1) / 3) * chartH}
+            r="2.5"
+            fill={ENERGY_COLORS[d.energy_level]}
+          />
+        ))}
+      </svg>
+      <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: ENERGY_COLORS[last.energy_level] }}>
+        {last.energy_level}/4
+      </span>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -53,6 +121,7 @@ export default function DashboardPage() {
   const [showNewMissionConfirm, setShowNewMissionConfirm] = useState(false);
   const [startingNew, setStartingNew] = useState(false);
   const [showPastMissions, setShowPastMissions] = useState(false);
+  const [recentCheckins, setRecentCheckins] = useState<CheckIn[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -146,6 +215,16 @@ export default function DashboardPage() {
         .single();
 
       if (planRow) setPlan(planRow);
+
+      // Load recent Ground Control check-ins for sparkline
+      const { data: checkinsData } = await supabase
+        .from("systems_checks")
+        .select("id, energy_level, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(8);
+
+      if (checkinsData) setRecentCheckins(checkinsData);
 
       // Load past missions (all but the most recent)
       const { data: allBriefings } = await supabase
@@ -293,6 +372,9 @@ export default function DashboardPage() {
               <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
                 Weekly wellbeing check-ins. How are you actually holding up?
               </p>
+              {recentCheckins.length > 0 && (
+                <MiniSparkline data={recentCheckins} />
+              )}
             </div>
           </Link>
 
