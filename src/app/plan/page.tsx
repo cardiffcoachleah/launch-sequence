@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/client";
 import CoachingCTA from "@/components/CoachingCTA";
 
@@ -1110,6 +1111,7 @@ function PlanPageInner() {
         })}
       </div>
 
+      <Footer />
     </div>
   );
 }
