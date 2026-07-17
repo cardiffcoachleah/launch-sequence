@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import VoiceInput from "@/components/VoiceInput";
@@ -498,6 +499,7 @@ export default function CaptainsLogPage() {
         )}
 
       </div>
+      <Footer />
     </div>
   );
 }
