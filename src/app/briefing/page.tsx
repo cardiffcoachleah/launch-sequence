@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
+import VoiceInput from "@/components/VoiceInput";
 
 interface BriefingData {
   function_area: string;
@@ -410,24 +411,38 @@ export default function BriefingPage() {
 
           {/* Textarea (required) */}
           {currentStep.type === "textarea" && (
-            <textarea
-              value={data[currentStep.field]}
-              onChange={(e) => updateField(e.target.value)}
-              placeholder={"placeholder" in currentStep ? currentStep.placeholder : ""}
-              rows={5}
-              style={{ marginBottom: "32px", resize: "none" }}
-            />
+            <div style={{ position: "relative", marginBottom: "32px" }}>
+              <textarea
+                value={data[currentStep.field]}
+                onChange={(e) => updateField(e.target.value)}
+                placeholder={"placeholder" in currentStep ? currentStep.placeholder : ""}
+                rows={5}
+                style={{ resize: "none", paddingRight: "44px" }}
+              />
+              <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
+                <VoiceInput
+                  onTranscript={(t) => updateField((data[currentStep.field] ? data[currentStep.field] + " " : "") + t)}
+                />
+              </div>
+            </div>
           )}
 
           {/* Textarea (optional) */}
           {currentStep.type === "textarea-optional" && (
-            <textarea
-              value={data[currentStep.field]}
-              onChange={(e) => updateField(e.target.value)}
-              placeholder={"placeholder" in currentStep ? currentStep.placeholder : ""}
-              rows={4}
-              style={{ marginBottom: "32px", resize: "none" }}
-            />
+            <div style={{ position: "relative", marginBottom: "32px" }}>
+              <textarea
+                value={data[currentStep.field]}
+                onChange={(e) => updateField(e.target.value)}
+                placeholder={"placeholder" in currentStep ? currentStep.placeholder : ""}
+                rows={4}
+                style={{ resize: "none", paddingRight: "44px" }}
+              />
+              <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
+                <VoiceInput
+                  onTranscript={(t) => updateField((data[currentStep.field] ? data[currentStep.field] + " " : "") + t)}
+                />
+              </div>
+            </div>
           )}
 
           {error && (
