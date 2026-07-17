@@ -6,6 +6,7 @@ import Nav from "@/components/Nav";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import VoiceInput from "@/components/VoiceInput";
+import CoachingCTA from "@/components/CoachingCTA";
 
 interface CheckIn {
   id: string;
@@ -478,7 +479,7 @@ export default function GroundControlPage() {
 
             {/* Add to flight plan */}
             {!addedToPlan && !showAddToPlan && (
-              <div style={{ marginBottom: "1.5rem" }}>
+              <div style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
                 <button
                   onClick={() => {
                     setShowAddToPlan(true);
@@ -503,6 +504,7 @@ export default function GroundControlPage() {
                   </svg>
                   Add to flight plan
                 </button>
+                <CoachingCTA trigger="link" label="Talk to Leah about this" context="ground-control" />
               </div>
             )}
 
