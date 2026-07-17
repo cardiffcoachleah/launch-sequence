@@ -65,19 +65,19 @@ export default function Home() {
     <div className="min-h-screen">
       <Nav />
 
-      <section style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center", padding: "5rem 1.5rem 4rem" }}>
-        <p className="eyebrow" style={{ marginBottom: "1.5rem" }}>For leaders in transition</p>
-        <h1 className="heading-display" style={{ fontSize: "2.8rem", marginBottom: "1.5rem" }}>
+      <section style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center", padding: "3.5rem 1.5rem 3rem" }}>
+        <p className="eyebrow" style={{ marginBottom: "1.25rem" }}>For leaders in transition</p>
+        <h1 className="heading-display" style={{ fontSize: "clamp(2rem, 6vw, 2.8rem)", marginBottom: "1.25rem" }}>
           Your first 90 days,
           <br />
           <em style={{ color: "var(--color-teal)" }}>planned before day one.</em>
         </h1>
-        <p style={{ fontSize: "15px", lineHeight: "1.7", color: "var(--color-text-tertiary)", maxWidth: "460px", margin: "0 auto 2.5rem" }}>
+        <p style={{ fontSize: "15px", lineHeight: "1.7", color: "var(--color-text-tertiary)", maxWidth: "460px", margin: "0 auto 2rem" }}>
           A personalized transition companion for leaders stepping into something new. New job, promotion, or career pivot. From T-10 to stable orbit.
         </p>
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-          <Link href="/briefing" className="btn-primary">Begin mission briefing</Link>
-          <a href="#phases" className="btn-secondary">See how it works</a>
+        <div className="hero-buttons" style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+          <Link href="/briefing" className="btn-primary" style={{ flex: "1 1 auto", maxWidth: "260px", justifyContent: "center" }}>Begin mission briefing</Link>
+          <a href="#phases" className="btn-secondary" style={{ flex: "1 1 auto", maxWidth: "200px", justifyContent: "center" }}>See how it works</a>
         </div>
       </section>
 
