@@ -12,11 +12,26 @@ interface PlanAction {
   category: "relationships" | "strategy" | "self" | "logistics";
 }
 
+interface Resource {
+  title: string;
+  author?: string;
+  creator?: string;
+  source?: string;
+  why: string;
+}
+
+interface PlanResources {
+  books?: Resource[];
+  podcasts?: Resource[];
+  articles?: Resource[];
+}
+
 interface PlanPhase {
   title: string;
   description: string;
   actions: PlanAction[];
   reflection: string;
+  resources?: PlanResources;
 }
 
 interface Plan {
@@ -960,6 +975,70 @@ function PlanPageInner() {
             </p>
           </div>
 
+          {/* T-10 Resources */}
+          {activePhase === "t10" && phase.resources && (
+            <div style={{ marginTop: "1.5rem" }}>
+              <p className="eyebrow" style={{ marginBottom: "16px" }}>Recommended reading</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+
+                {/* Books */}
+                {phase.resources.books && phase.resources.books.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Books</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {phase.resources.books.map((book, i) => (
+                        <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-teal)" }}>
+                          <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                            {book.title}
+                            {book.author && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {book.author}</span>}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{book.why}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Podcasts */}
+                {phase.resources.podcasts && phase.resources.podcasts.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Podcasts</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {phase.resources.podcasts.map((pod, i) => (
+                        <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-mint)" }}>
+                          <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                            {pod.title}
+                            {pod.creator && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {pod.creator}</span>}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{pod.why}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Articles */}
+                {phase.resources.articles && phase.resources.articles.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Articles</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {phase.resources.articles.map((art, i) => (
+                        <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-amber)" }}>
+                          <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                            {art.title}
+                            {art.source && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {art.source}</span>}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{art.why}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
 
@@ -1002,6 +1081,26 @@ function PlanPageInner() {
                 <div style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#c8920a", marginBottom: "4px", fontFamily: "var(--font-mono)" }}>Reflection</div>
                 <p style={{ fontSize: "12px", fontStyle: "italic", color: "#333", margin: 0, lineHeight: "1.6" }}>{p.reflection}</p>
               </div>
+              {key === "t10" && p.resources && (
+                <div style={{ marginTop: "12px" }}>
+                  <div style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#0EB2CD", marginBottom: "8px", fontFamily: "var(--font-mono)" }}>Recommended reading</div>
+                  {p.resources.books?.map((b, bi) => (
+                    <div key={bi} style={{ fontSize: "11px", marginBottom: "4px", paddingLeft: "8px", borderLeft: "2px solid #0EB2CD" }}>
+                      <strong>{b.title}</strong>{b.author ? ` — ${b.author}` : ""}: {b.why}
+                    </div>
+                  ))}
+                  {p.resources.podcasts?.map((pod, pi) => (
+                    <div key={pi} style={{ fontSize: "11px", marginBottom: "4px", paddingLeft: "8px", borderLeft: "2px solid #6AE8A4" }}>
+                      <strong>{pod.title}</strong>{pod.creator ? ` — ${pod.creator}` : ""}: {pod.why}
+                    </div>
+                  ))}
+                  {p.resources.articles?.map((a, ai) => (
+                    <div key={ai} style={{ fontSize: "11px", marginBottom: "4px", paddingLeft: "8px", borderLeft: "2px solid #F5A623" }}>
+                      <strong>{a.title}</strong>{a.source ? ` — ${a.source}` : ""}: {a.why}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
