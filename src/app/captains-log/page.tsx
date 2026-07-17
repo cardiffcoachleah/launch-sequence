@@ -13,6 +13,7 @@ interface LogEntry {
   entry: string;
   created_at: string;
   action_title?: string;
+  action_key?: string;
 }
 
 interface Insight {
