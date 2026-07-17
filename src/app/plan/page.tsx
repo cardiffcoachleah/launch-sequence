@@ -535,12 +535,12 @@ function PlanPageInner() {
         </div>
       )}
 
-      <div style={{ flex: 1, display: "flex" }}>
+      <div className="plan-layout" style={{ flex: 1, display: "flex" }}>
 
         {/* Sidebar */}
-        <aside style={{ width: "240px", borderRight: "1px solid var(--color-border-subtle)", padding: "1.5rem", flexShrink: 0 }}>
+        <aside className="plan-sidebar" style={{ width: "240px", borderRight: "1px solid var(--color-border-subtle)", padding: "1.5rem", flexShrink: 0 }}>
           <p className="eyebrow" style={{ marginBottom: "16px" }}>Mission phases</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div className="plan-sidebar-phases" style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {phaseKeys.map((key) => {
               const phaseProgress = getPhaseProgress(plan[key], key, statusMap);
               return (
@@ -574,7 +574,7 @@ function PlanPageInner() {
           </div>
 
           {/* Legend */}
-          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
+          <div className="plan-sidebar-legend" style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
             <p className="eyebrow" style={{ marginBottom: "12px" }}>Legend</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {Object.entries(categoryStyles).map(([key, style]) => (
@@ -587,7 +587,7 @@ function PlanPageInner() {
           </div>
 
           {/* Status legend */}
-          <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
+          <div className="plan-sidebar-status" style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
             <p className="eyebrow" style={{ marginBottom: "12px" }}>Status</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {(Object.entries(STATUS_CONFIG) as [ActionStatus, typeof STATUS_CONFIG[ActionStatus]][]).map(([key, config]) => (
@@ -604,7 +604,7 @@ function PlanPageInner() {
 
           {/* Actions */}
           {isLoggedIn && (
-            <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
+            <div className="plan-sidebar-actions" style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--color-border-subtle)" }}>
               <p className="eyebrow" style={{ marginBottom: "10px" }}>Actions</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <a
@@ -676,7 +676,7 @@ function PlanPageInner() {
         </aside>
 
         {/* Main content */}
-        <main style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "760px" }}>
+        <main className="plan-main" style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "760px" }}>
 
           {/* Phase header */}
           <div style={{ marginBottom: "1.5rem" }}>
