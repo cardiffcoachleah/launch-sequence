@@ -551,3 +551,77 @@ label {
     margin: 1.5cm 2cm;
   }
 }
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+
+  /* Nav — hide wordmark on very small screens */
+  .nav-wordmark {
+    display: none;
+  }
+
+  /* Home page hero */
+  .hero-buttons {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* Dashboard cards — single column on mobile */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Flight Plan — stack sidebar above content on mobile */
+  .plan-layout {
+    flex-direction: column !important;
+  }
+
+  .plan-sidebar {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding: 1rem 1.25rem !important;
+  }
+
+  /* On mobile, show phases as horizontal scroll row */
+  .plan-sidebar-phases {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px;
+  }
+
+  .plan-sidebar-phases .sidebar-item {
+    white-space: nowrap;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* Hide sidebar legend and status on mobile — too much info */
+  .plan-sidebar-legend,
+  .plan-sidebar-status,
+  .plan-sidebar-actions {
+    display: none !important;
+  }
+
+  /* Plan main — full width, less padding */
+  .plan-main {
+    padding: 1.25rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Action cards — ensure text doesn't get too cramped */
+  .plan-main h1 {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-wordmark {
+    display: none;
+  }
+}
