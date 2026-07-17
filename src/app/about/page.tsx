@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import Link from "next/link";
+import CoachingCTA from "@/components/CoachingCTA";
 
 export default function AboutPage() {
   return (
@@ -102,7 +103,70 @@ export default function AboutPage() {
 
         <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, var(--color-border), transparent)", marginBottom: "3rem" }} />
 
-        {/* CTA */}
+        {/* Coaching CTA */}
+        <div style={{ marginBottom: "3rem" }}>
+          <p className="eyebrow" style={{ marginBottom: "12px" }}>Work with Leah</p>
+          <h2 style={{ fontSize: "1.4rem", fontWeight: 400, marginBottom: "1rem" }}>
+            Want support beyond the plan?
+          </h2>
+          <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)", marginBottom: "1.5rem" }}>
+            Launch Sequence is designed to be useful on its own. But sometimes you need a real person. If you want to work with Leah directly, there are two ways in.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "460px" }}>
+            <a
+              href="https://calendly.com/lfcoaching/free-discovery-call"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                padding: "16px",
+                background: "var(--color-bg-card)",
+                border: "1px solid var(--color-border-card)",
+                borderRadius: "var(--radius)",
+                textDecoration: "none",
+                transition: "border-color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--color-teal)")}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--color-border-card)")}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>New client</span>
+                <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-teal)" }}>20 min</span>
+              </div>
+              <span style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
+                Free discovery call. We figure out if working together makes sense.
+              </span>
+            </a>
+            <a
+              href="https://calendly.com/lfcoaching/coaching-session-60-mins"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                padding: "16px",
+                background: "var(--color-bg-card)",
+                border: "1px solid var(--color-border-card)",
+                borderRadius: "var(--radius)",
+                textDecoration: "none",
+                transition: "border-color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--color-teal)")}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--color-border-card)")}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Existing client</span>
+                <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-teal)" }}>60 min</span>
+              </div>
+              <span style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
+                Book your next coaching session.
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, var(--color-border), transparent)", marginBottom: "3rem" }} />
         <div style={{ textAlign: "center", padding: "0.5rem 0 1rem" }}>
           <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontStyle: "italic", fontWeight: 400, color: "var(--color-text-secondary)", marginBottom: "1.5rem", lineHeight: "1.6" }}>
             Ready to build your plan?
