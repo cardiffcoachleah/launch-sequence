@@ -360,7 +360,6 @@ export default function CaptainsLogPage() {
                         </p>
                       )}
                       <p style={{
-                        fontSize: "14px",
                         color: "var(--color-text-secondary)",
                         lineHeight: "1.7",
                         margin: 0,
@@ -368,7 +367,7 @@ export default function CaptainsLogPage() {
                         fontFamily: isReflection ? "var(--font-heading)" : "var(--font-body)",
                         fontStyle: isReflection ? "italic" : "normal",
                         fontSize: isReflection ? "1rem" : "14px",
-                      } as React.CSSProperties}>
+                      }}>
                         {entry.entry}
                       </p>
                     </div>
