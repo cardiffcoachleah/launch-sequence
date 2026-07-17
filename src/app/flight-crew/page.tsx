@@ -152,7 +152,7 @@ export default function FlightCrewPage() {
       role: member.role || "",
       context: member.context || "team",
       referred_by: member.referred_by || "",
-      status: member.status,
+      status: member.status as "to_meet" | "connected" | "ongoing",
       notes: member.notes || "",
     });
     setEditingId(member.id);
