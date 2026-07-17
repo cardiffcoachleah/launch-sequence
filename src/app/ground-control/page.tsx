@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import VoiceInput from "@/components/VoiceInput";
 
 interface CheckIn {
   id: string;
@@ -400,14 +401,19 @@ export default function GroundControlPage() {
               <label htmlFor="weighing" style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "10px", display: "block" }}>
                 What's weighing on you right now?
               </label>
-              <textarea
-                id="weighing"
-                value={weighing}
-                onChange={(e) => setWeighing(e.target.value)}
-                placeholder="e.g., I have a difficult conversation coming up with a direct report who is underperforming. I keep putting it off..."
-                rows={4}
-                style={{ resize: "none" }}
-              />
+              <div style={{ position: "relative" }}>
+                <textarea
+                  id="weighing"
+                  value={weighing}
+                  onChange={(e) => setWeighing(e.target.value)}
+                  placeholder="e.g., I have a difficult conversation coming up with a direct report who is underperforming. I keep putting it off..."
+                  rows={4}
+                  style={{ resize: "none", paddingRight: "44px" }}
+                />
+                <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
+                  <VoiceInput onTranscript={(t) => setWeighing((prev) => (prev ? prev + " " : "") + t)} />
+                </div>
+              </div>
             </div>
 
             {/* Went well */}
@@ -415,14 +421,19 @@ export default function GroundControlPage() {
               <label htmlFor="wentWell" style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "10px", display: "block" }}>
                 What's one thing that went well this week?
               </label>
-              <textarea
-                id="wentWell"
-                value={wentWell}
-                onChange={(e) => setWentWell(e.target.value)}
-                placeholder="e.g., I finally had the 1:1 with my skip-level that I had been nervous about. It went better than expected..."
-                rows={3}
-                style={{ resize: "none" }}
-              />
+              <div style={{ position: "relative" }}>
+                <textarea
+                  id="wentWell"
+                  value={wentWell}
+                  onChange={(e) => setWentWell(e.target.value)}
+                  placeholder="e.g., I finally had the 1:1 with my skip-level that I had been nervous about. It went better than expected..."
+                  rows={3}
+                  style={{ resize: "none", paddingRight: "44px" }}
+                />
+                <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
+                  <VoiceInput onTranscript={(t) => setWentWell((prev) => (prev ? prev + " " : "") + t)} />
+                </div>
+              </div>
             </div>
 
             <button
