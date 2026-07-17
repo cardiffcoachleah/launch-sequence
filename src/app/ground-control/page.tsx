@@ -165,6 +165,13 @@ export default function GroundControlPage() {
   const [wentWell, setWentWell] = useState("");
   const [aiResponse, setAiResponse] = useState("");
 
+  // Add to flight plan state
+  const [showAddToPlan, setShowAddToPlan] = useState(false);
+  const [addActionTitle, setAddActionTitle] = useState("");
+  const [addPhase, setAddPhase] = useState("observe");
+  const [addingToPlan, setAddingToPlan] = useState(false);
+  const [addedToPlan, setAddedToPlan] = useState(false);
+
   useEffect(() => {
     async function load() {
       const supabase = createClient();
@@ -231,7 +238,57 @@ export default function GroundControlPage() {
     setWeighing("");
     setWentWell("");
     setAiResponse("");
+    setShowAddToPlan(false);
+    setAddActionTitle("");
+    setAddedToPlan(false);
     setStep("form");
+  }
+
+  async function handleAddToPlan() {
+    if (!addActionTitle.trim()) return;
+    setAddingToPlan(true);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get current plan
+      const { data: planRow } = await supabase
+        .from("plans")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_current", true)
+        .single();
+
+      if (!planRow) return;
+
+      const updatedPlan = { ...planRow.plan_data } as Record<string, { actions: { title: string; description: string; category: string }[] }>;
+      const phaseData = updatedPlan[addPhase];
+      if (phaseData) {
+        phaseData.actions = [
+          ...phaseData.actions,
+          {
+            title: addActionTitle,
+            description: `Added from Ground Control check-in: ${weighing.slice(0, 120)}${weighing.length > 120 ? "..." : ""}`,
+            category: "self",
+          },
+        ];
+      }
+
+      await supabase
+        .from("plans")
+        .update({ plan_data: updatedPlan })
+        .eq("id", planRow.id);
+
+      localStorage.setItem("launchsequence_plan", JSON.stringify(updatedPlan));
+      setAddedToPlan(true);
+      setShowAddToPlan(false);
+    } catch (err) {
+      console.error("Add to plan error:", err);
+    } finally {
+      setAddingToPlan(false);
+    }
   }
 
   if (loading) {
@@ -391,7 +448,7 @@ export default function GroundControlPage() {
               </div>
             </div>
 
-            <div className="card-warm" style={{ marginBottom: "2rem" }}>
+            <div className="card-warm" style={{ marginBottom: "1.5rem" }}>
               <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "12px" }}>
                 Ground control responds
               </p>
@@ -407,6 +464,109 @@ export default function GroundControlPage() {
                 {aiResponse}
               </p>
             </div>
+
+            {/* Add to flight plan */}
+            {!addedToPlan && !showAddToPlan && (
+              <div style={{ marginBottom: "1.5rem" }}>
+                <button
+                  onClick={() => {
+                    setShowAddToPlan(true);
+                    setAddActionTitle(weighing.split(".")[0].slice(0, 80).trim());
+                  }}
+                  style={{
+                    fontSize: "13px",
+                    color: "var(--color-teal)",
+                    background: "none",
+                    border: "1px solid rgba(14,178,205,0.3)",
+                    borderRadius: "var(--radius)",
+                    padding: "8px 14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  Add to flight plan
+                </button>
+              </div>
+            )}
+
+            {showAddToPlan && (
+              <div style={{ marginBottom: "1.5rem", padding: "16px", background: "var(--color-bg-card)", border: "1px solid var(--color-border)", borderRadius: "var(--radius)" }}>
+                <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "12px" }}>
+                  Add an action to your flight plan
+                </p>
+                <div style={{ marginBottom: "10px" }}>
+                  <label style={{ fontSize: "12px", color: "var(--color-text-tertiary)", display: "block", marginBottom: "6px" }}>Action title</label>
+                  <input
+                    type="text"
+                    value={addActionTitle}
+                    onChange={(e) => setAddActionTitle(e.target.value)}
+                    placeholder="e.g., Schedule the difficult conversation with my direct report"
+                    style={{ fontSize: "13px", padding: "8px 12px" }}
+                  />
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <label style={{ fontSize: "12px", color: "var(--color-text-tertiary)", display: "block", marginBottom: "6px" }}>Add to phase</label>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {[
+                      { key: "t10", label: "T-10" },
+                      { key: "observe", label: "Observe" },
+                      { key: "orient", label: "Orient" },
+                      { key: "act", label: "Act" },
+                    ].map((p) => (
+                      <button
+                        key={p.key}
+                        onClick={() => setAddPhase(p.key)}
+                        style={{
+                          fontSize: "12px",
+                          padding: "5px 12px",
+                          borderRadius: "var(--radius)",
+                          border: `1px solid ${addPhase === p.key ? "var(--color-teal)" : "var(--color-border-subtle)"}`,
+                          background: addPhase === p.key ? "rgba(14,178,205,0.1)" : "transparent",
+                          color: addPhase === p.key ? "var(--color-teal)" : "var(--color-text-tertiary)",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    onClick={handleAddToPlan}
+                    disabled={!addActionTitle.trim() || addingToPlan}
+                    className="btn-primary"
+                    style={{ fontSize: "12px", padding: "7px 16px" }}
+                  >
+                    {addingToPlan ? "Adding..." : "Add to plan"}
+                  </button>
+                  <button
+                    onClick={() => setShowAddToPlan(false)}
+                    className="back-link"
+                    style={{ fontSize: "12px" }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {addedToPlan && (
+              <div style={{ marginBottom: "1.5rem", padding: "10px 14px", background: "rgba(106,232,164,0.08)", border: "1px solid rgba(106,232,164,0.25)", borderRadius: "var(--radius)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-mint)", flexShrink: 0 }}>
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span style={{ fontSize: "13px", color: "var(--color-mint)" }}>Added to your flight plan.</span>
+                <Link href="/plan" style={{ fontSize: "13px", color: "var(--color-teal)", marginLeft: "auto" }}>View plan</Link>
+              </div>
+            )}
 
             <div style={{ display: "flex", gap: "10px" }}>
               <button onClick={handleNewCheckIn} className="btn-secondary" style={{ flex: 1, justifyContent: "center" }}>
