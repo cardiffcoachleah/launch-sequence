@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Nav from "@/components/Nav";
 import Link from "next/link";
+import CoachingCTA from "@/components/CoachingCTA";
 
 interface BriefingRow {
   id: string;
@@ -417,6 +418,32 @@ export default function DashboardPage() {
             </Link>
 
           </div>
+        </div>
+
+        </div>
+
+        {/* Coaching CTA */}
+        <div style={{
+          padding: "16px 20px",
+          background: "var(--color-bg-card)",
+          border: "1px solid var(--color-border-subtle)",
+          borderRadius: "var(--radius)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "16px",
+          flexWrap: "wrap",
+          marginBottom: "2rem",
+        }}>
+          <div>
+            <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+              Want support with this transition?
+            </p>
+            <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", margin: 0 }}>
+              Leah is available to work with you directly.
+            </p>
+          </div>
+          <CoachingCTA trigger="button" label="Work with Leah" context="dashboard" />
         </div>
 
         {/* Past missions */}
