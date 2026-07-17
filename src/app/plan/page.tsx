@@ -173,6 +173,18 @@ function PlanPageInner() {
   const [savingEdit, setSavingEdit] = useState(false);
   const [ripples, setRipples] = useState<{ action_title: string; phase?: string; reason: string }[]>([]);
   const [rippleKey, setRippleKey] = useState<string | null>(null);
+
+  // Access control
+  const [hasAccess, setHasAccess] = useState(false);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessCode, setAccessCode] = useState("");
+  const [accessError, setAccessError] = useState("");
+  const [requestName, setRequestName] = useState("");
+  const [requestEmail, setRequestEmail] = useState("");
+  const [requestSent, setRequestSent] = useState(false);
+  const [accessView, setAccessView] = useState<"enter" | "request">("enter");
+  const [accessLoading, setAccessLoading] = useState(false);
+  const [briefingTransitionType, setBriefingTransitionType] = useState("");
   const [saveEmail, setSaveEmail] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [saveError, setSaveError] = useState<string>("");
@@ -182,6 +194,19 @@ function PlanPageInner() {
     async function loadPlan() {
 
       // If viewing a past mission via ?briefing=ID, load that specific plan
+      // Check if access was granted via code
+      const accessGranted = localStorage.getItem("ls_access_granted");
+      if (accessGranted === "true") setHasAccess(true);
+
+      // Load transition type for access request context
+      const storedBriefing = localStorage.getItem("launchsequence_briefing");
+      if (storedBriefing) {
+        try {
+          const b = JSON.parse(storedBriefing);
+          setBriefingTransitionType(b.transition_type || "");
+        } catch { /* ignore */ }
+      }
+
       if (briefingId) {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -270,6 +295,7 @@ function PlanPageInner() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setIsLoggedIn(true);
+        setHasAccess(true); // logged in users have full access
         const { data: planRow } = await supabase
           .from("plans")
           .select("*")
@@ -446,6 +472,53 @@ function PlanPageInner() {
       }
     } catch {
       setRippleKey(null);
+    }
+  }
+
+  async function handleValidateCode() {
+    if (!accessCode.trim()) return;
+    setAccessLoading(true);
+    setAccessError("");
+    try {
+      const res = await fetch("/api/access-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "validate", code: accessCode, email: "" }),
+      });
+      const result = await res.json();
+      if (result.valid) {
+        localStorage.setItem("ls_access_granted", "true");
+        setHasAccess(true);
+        setShowAccessModal(false);
+      } else {
+        setAccessError(result.message || "Invalid code.");
+      }
+    } catch {
+      setAccessError("Something went wrong. Try again.");
+    } finally {
+      setAccessLoading(false);
+    }
+  }
+
+  async function handleRequestCode() {
+    if (!requestName.trim() || !requestEmail.trim()) return;
+    setAccessLoading(true);
+    try {
+      await fetch("/api/access-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "request",
+          name: requestName,
+          email: requestEmail,
+          transition_type: briefingTransitionType,
+        }),
+      });
+      setRequestSent(true);
+    } catch {
+      setAccessError("Something went wrong. Try again.");
+    } finally {
+      setAccessLoading(false);
     }
   }
 
@@ -694,17 +767,100 @@ function PlanPageInner() {
             </p>
           </div>
 
-          {/* Phase progress */}
-          {progress.total > 0 && (
-            <div style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ flex: 1, height: "4px", background: "var(--color-border-subtle)", borderRadius: "2px", overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${progress.percent}%`, background: progress.percent === 100 ? "var(--color-mint)" : "var(--color-teal)", transition: "width 0.3s ease" }} />
+          {/* Locked gate for non-T10 phases without access */}
+          {!hasAccess && activePhase !== "t10" ? (
+            <div>
+              {/* Preview: first action card */}
+              {phase.actions.length > 0 && (() => {
+                const action = phase.actions[0];
+                const cat = categoryStyles[action.category] || categoryStyles.logistics;
+                return (
+                  <div style={{ background: cat.bg, border: `1px solid ${cat.border}`, borderRadius: "var(--radius)", padding: "1rem", marginBottom: "8px", opacity: 0.9 }}>
+                    <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "4px" }}>{action.title}</div>
+                    <div style={{ fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6" }}>{action.description}</div>
+                    <div className="action-category-label" style={{ color: cat.color }}>
+                      <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color }} />
+                      {cat.label}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Fade + lock overlay */}
+              <div style={{ position: "relative" }}>
+                {/* Blurred preview cards */}
+                <div style={{ filter: "blur(4px)", opacity: 0.3, pointerEvents: "none", marginBottom: "8px" }}>
+                  {phase.actions.slice(1, 3).map((action, i) => {
+                    const cat = categoryStyles[action.category] || categoryStyles.logistics;
+                    return (
+                      <div key={i} style={{ background: cat.bg, border: `1px solid ${cat.border}`, borderRadius: "var(--radius)", padding: "1rem", marginBottom: "8px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>{action.title}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Lock card */}
+                <div style={{
+                  background: "var(--color-bg)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius)",
+                  padding: "2rem",
+                  textAlign: "center",
+                }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: "var(--color-text-tertiary)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                  </div>
+
+                  <h3 style={{ fontSize: "1.2rem", marginBottom: "8px" }}>Unlock the full 90-day plan</h3>
+                  <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.6", marginBottom: "20px", maxWidth: "320px", margin: "0 auto 20px" }}>
+                    Your T-10 plan is ready. Full access includes your complete 90-day plan across all phases, plus:
+                  </p>
+
+                  {/* What's included */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px", maxWidth: "360px", margin: "0 auto 24px", textAlign: "left" }}>
+                    {[
+                      { label: "Full flight plan", desc: "All 4 phases, 20+ actions" },
+                      { label: "Ground control", desc: "Weekly wellbeing check-ins" },
+                      { label: "Captain's log", desc: "Notes and reflections" },
+                      { label: "Flight crew", desc: "Track key relationships" },
+                    ].map((item) => (
+                      <div key={item.label} style={{ padding: "10px 12px", background: "var(--color-bg-card)", borderRadius: "var(--radius)", border: "1px solid var(--color-border-subtle)" }}>
+                        <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>{item.label}</div>
+                        <div style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>{item.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setShowAccessModal(true)}
+                    className="btn-primary"
+                    style={{ marginBottom: "12px" }}
+                  >
+                    Get access
+                  </button>
+                  <p style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>
+                    Enter an access code or request one from Leah.
+                  </p>
+                </div>
               </div>
-              <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: progress.percent === 100 ? "var(--color-mint)" : "var(--color-text-tertiary)", flexShrink: 0 }}>
-                {progress.done} / {progress.total} complete
-              </span>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Phase progress */}
+              {progress.total > 0 && (
+                <div style={{ marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ flex: 1, height: "4px", background: "var(--color-border-subtle)", borderRadius: "2px", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${progress.percent}%`, background: progress.percent === 100 ? "var(--color-mint)" : "var(--color-teal)", transition: "width 0.3s ease" }} />
+                  </div>
+                  <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: progress.percent === 100 ? "var(--color-mint)" : "var(--color-text-tertiary)", flexShrink: 0 }}>
+                    {progress.done} / {progress.total} complete
+                  </span>
+                </div>
+              )}
 
           {/* Actions */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "2.5rem" }}>
@@ -1040,6 +1196,98 @@ function PlanPageInner() {
                   </div>
                 )}
 
+              </div>
+            </div>
+          )}
+
+          </>
+          )}
+
+          {/* Access code modal */}
+          {showAccessModal && (
+            <div
+              onClick={() => setShowAccessModal(false)}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "1.5rem" }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ background: "var(--color-bg)", border: "1px solid var(--color-border)", borderRadius: "var(--radius)", padding: "2rem", maxWidth: "420px", width: "100%" }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
+                  <h2 style={{ fontSize: "1.3rem", margin: 0 }}>
+                    {requestSent ? "Request sent" : accessView === "enter" ? "Enter your access code" : "Request an access code"}
+                  </h2>
+                  <button onClick={() => setShowAccessModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "20px", lineHeight: 1 }}>&times;</button>
+                </div>
+
+                {requestSent ? (
+                  <div>
+                    <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: "1.7", marginBottom: "1.5rem" }}>
+                      Thanks. Leah will send your access code within 24 hours. Keep an eye on your inbox.
+                    </p>
+                    <button onClick={() => setShowAccessModal(false)} className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                      Got it
+                    </button>
+                  </div>
+                ) : accessView === "enter" ? (
+                  <div>
+                    <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "16px" }}>
+                      Have a code? Enter it below for immediate access.
+                    </p>
+                    <input
+                      type="text"
+                      value={accessCode}
+                      onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+                      placeholder="LS-XXXX-XXXX"
+                      style={{ marginBottom: "8px", letterSpacing: "0.05em", fontFamily: "var(--font-mono)" }}
+                      autoFocus
+                    />
+                    {accessError && (
+                      <p style={{ fontSize: "13px", color: "var(--color-amber)", marginBottom: "12px" }}>{accessError}</p>
+                    )}
+                    <button
+                      onClick={handleValidateCode}
+                      disabled={!accessCode.trim() || accessLoading}
+                      className="btn-primary"
+                      style={{ width: "100%", justifyContent: "center", marginBottom: "12px" }}
+                    >
+                      {accessLoading ? "Checking..." : "Unlock access"}
+                    </button>
+                    <p style={{ fontSize: "12px", color: "var(--color-text-minimum)", textAlign: "center" }}>
+                      No code?{" "}
+                      <button onClick={() => setAccessView("request")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-teal)", fontSize: "12px", padding: 0 }}>
+                        Request one from Leah
+                      </button>
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "16px" }}>
+                      Leah will review your request and send a code within 24 hours.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "12px" }}>
+                      <input type="text" value={requestName} onChange={(e) => setRequestName(e.target.value)} placeholder="Your name" />
+                      <input type="email" value={requestEmail} onChange={(e) => setRequestEmail(e.target.value)} placeholder="your@email.com" />
+                    </div>
+                    {accessError && (
+                      <p style={{ fontSize: "13px", color: "var(--color-amber)", marginBottom: "12px" }}>{accessError}</p>
+                    )}
+                    <button
+                      onClick={handleRequestCode}
+                      disabled={!requestName.trim() || !requestEmail.trim() || accessLoading}
+                      className="btn-primary"
+                      style={{ width: "100%", justifyContent: "center", marginBottom: "12px" }}
+                    >
+                      {accessLoading ? "Sending..." : "Request access code"}
+                    </button>
+                    <p style={{ fontSize: "12px", color: "var(--color-text-minimum)", textAlign: "center" }}>
+                      Already have a code?{" "}
+                      <button onClick={() => setAccessView("enter")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-teal)", fontSize: "12px", padding: 0 }}>
+                        Enter it here
+                      </button>
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
