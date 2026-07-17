@@ -118,12 +118,16 @@ export default function Home() {
       </section>
 
       <footer style={{ textAlign: "center", padding: "2rem", borderTop: "1px solid var(--color-border-subtle)" }}>
-        <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 300, fontStyle: "italic", color: "var(--color-text-tertiary)", marginBottom: "8px" }}>
+        <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.3rem", fontWeight: 300, fontStyle: "italic", color: "var(--color-text-tertiary)", marginBottom: "12px" }}>
           Built by a coach who has lived this transition six times.
         </p>
+        <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px", flexWrap: "wrap" }}>
+          <Link href="/about" style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>About</Link>
+          <a href="https://leahfarmer.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>leahfarmer.com</a>
+          <a href="mailto:leah@leahfarmer.com" style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>leah@leahfarmer.com</a>
+        </div>
         <p style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>
-          A project by Leah Farmer &middot;{" "}
-          <a href="https://leahfarmer.com" style={{ color: "var(--color-text-minimum)" }}>leahfarmer.com</a>
+          &copy; {new Date().getFullYear()} Leah Farmer &middot; Cardiff, Wales
         </p>
       </footer>
     </div>
