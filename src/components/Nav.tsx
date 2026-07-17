@@ -77,6 +77,9 @@ export default function Nav() {
           </>
         ) : (
           <>
+            <Link href="/about" style={{ fontSize: "13px", color: "var(--color-text-tertiary)", whiteSpace: "nowrap" }}>
+              About
+            </Link>
             <Link href="/login" style={{ fontSize: "13px", color: "var(--color-text-tertiary)", whiteSpace: "nowrap" }}>
               Sign in
             </Link>
