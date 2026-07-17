@@ -90,7 +90,18 @@ PLAN STRUCTURE — Return ONLY valid JSON, no markdown, no code fences, no expla
         "category": "relationships"
       }
     ],
-    "reflection": "One honest, thought-provoking reflection prompt for this phase"
+    "reflection": "One honest, thought-provoking reflection prompt for this phase",
+    "resources": {
+      "books": [
+        { "title": "Book title", "author": "Author name", "why": "One sentence on why this book for this specific person." }
+      ],
+      "podcasts": [
+        { "title": "Podcast or episode title", "creator": "Host or show name", "why": "One sentence on why this for this specific person." }
+      ],
+      "articles": [
+        { "title": "Article title", "source": "Publication or author", "why": "One sentence on why this for this specific person." }
+      ]
+    }
   },
   "observe": {
     "title": "Days 1 to 30: Observe",
@@ -114,7 +125,15 @@ PLAN STRUCTURE — Return ONLY valid JSON, no markdown, no code fences, no expla
 
 Category must be exactly one of: "relationships", "strategy", "self", "logistics"
 T-10 phase: 3-5 actions. Observe, Orient, Act phases: 4-6 actions each.
-All actions must be tailored to this person's specific transition type, seniority change, function, level, company stage, team situation, and stated concerns.`;
+All actions must be tailored to this person's specific transition type, seniority change, function, level, company stage, team situation, and stated concerns.
+
+RESOURCES GUIDANCE:
+The resources section is for the T-10 phase only. Recommend reading and listening material that is genuinely useful for THIS specific person in THEIR specific situation — not a generic leadership reading list.
+- Books: 2-3 books maximum. Prefer books that directly address their transition type, function, level, or biggest concern. Real books with real authors only.
+- Podcasts: 1-2 podcasts or specific episodes. Can be a general show or a specific episode if highly relevant.
+- Articles: 1-2 articles. Can be from HBR, First Round Review, a16z, or other credible sources. Describe the article clearly enough that they can find it.
+- The "why" field must be specific to their situation — "This book addresses exactly the challenge of managing former peers" not "A great leadership book."
+- Do not recommend books you are not confident exist. If uncertain, omit rather than invent.`;
 
     const isFirstJob = briefing.transition_type === "This is my first job";
 
