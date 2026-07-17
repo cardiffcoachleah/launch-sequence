@@ -16,13 +16,13 @@ export default function AboutPage() {
           </h1>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              Most leadership transitions fail not because of competence, but because of context. You walk into a new role, a promotion, or an unfamiliar function — and no one gives you a real map. You are expected to figure it out, fast, while also performing and building trust and managing your own nervous system.
+              Most leadership transitions fail not because of competence, but because of context. You walk into a new role, a promotion, or an unfamiliar function with no real map. You are expected to figure it out fast, while also performing and building trust and managing your own nervous system.
             </p>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              Launch Sequence is an AI-powered companion that gives you that map. It starts with a personalized briefing — what kind of transition you are in, what the stakes are, what you are most worried about. From that, it builds a plan tailored to your specific situation: a T-10 pre-launch phase, then 30, 60, and 90 days of Observe, Orient, and Act.
+              Launch Sequence gives you that map. It starts with a briefing: what kind of transition you are in, what the stakes are, what you are most worried about. From that it builds a plan for your specific situation. A T-10 pre-launch phase, then 30, 60, and 90 days of Observe, Orient, and Act.
             </p>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              The plan is not a template. It knows whether you are stepping up or moving laterally, whether you are managing former peers, whether you are walking into a turnaround or a scaleup. It gives you a reading list for your T-10 window. And it stays with you — a place to track your actions, log what you are learning, check in on how you are holding up, and keep track of the people who matter to this transition.
+              The plan is not a template. It knows whether you are stepping up or moving laterally, whether you are managing former peers, whether you are walking into a turnaround or a scaleup. It gives you a reading list for the days before you start. And it stays with you: a place to track your actions, log what you are learning, check in on how you are holding up, and keep track of the people who matter to this transition.
             </p>
           </div>
         </div>
@@ -37,13 +37,13 @@ export default function AboutPage() {
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              The instinct in any new role is to move fast, demonstrate value, and show everyone they made the right call. That instinct is usually wrong. The leaders who land well are the ones who listen first, form genuine relationships before forming opinions, and resist the urge to import solutions from wherever they came from.
+              The instinct in any new role is to move fast, demonstrate value, show everyone they made the right call. That instinct is usually wrong. The leaders who land well are the ones who listen before they form opinions. Who build real relationships before they start making moves. Who resist the urge to import solutions from wherever they just came from.
             </p>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              This product is built around that belief. The phases are named for what they require of you, not what you are supposed to deliver. Observe. Orient. Act. In that order, on purpose.
+              The phases in this product are named for what they require of you, not what you are supposed to deliver. Observe. Orient. Act. In that order, on purpose.
             </p>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              It also takes seriously the fact that transitions are hard on the whole person, not just the professional one. Ground Control exists because how you are holding up matters. The plan adapts because reality never matches the briefing. The Captain's Log exists because writing things down is how most of us actually make sense of what is happening.
+              Transitions are hard on the whole person, not just the professional one. Ground Control exists because how you are holding up matters. The plan can be updated because reality never matches the briefing. The Captain's Log exists because writing things down is how most people actually make sense of what is happening.
             </p>
           </div>
         </div>
@@ -58,13 +58,13 @@ export default function AboutPage() {
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              I have been in technology for 25 years — at Amazon, Google, Expedia, Klarna, and a handful of Sequoia-backed startups. I have navigated six major leadership transitions personally: new companies, significant step-ups, lateral moves into unfamiliar functions. Some went well. Some did not. I learned more from the ones that did not.
+              I have been in technology for 25 years. Amazon, Google, Expedia, Klarna, a handful of Sequoia-backed startups. I have navigated six major leadership transitions personally: new companies, significant step-ups, lateral moves into unfamiliar functions. Some went well. Some did not. I learned more from the ones that did not.
             </p>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              I am an ICF PCC-certified executive coach with over 1,500 hours of coaching practice. I work with tech leaders — product managers, engineers, designers, and executives — on the things that are hard to name: imposter syndrome at a new altitude, the loneliness of senior leadership, the politics of organizations that do not run the way they look on paper.
+              I am an ICF PCC-certified executive coach with over 1,500 hours of coaching practice. I work with tech leaders on the things that are hard to name: imposter syndrome at a new altitude, the loneliness of senior leadership, the politics of organizations that do not run the way they look on paper.
             </p>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
-              I built Launch Sequence because the coaching frameworks I use with clients — the listening tour, the stakeholder map, the 30/60/90 structure — work, but most people do not have access to a coach during a transition. This product is my attempt to change that. It is not a replacement for real coaching. But it is a real tool, built by someone who has lived this.
+              I built Launch Sequence because the frameworks I use with coaching clients work, but most people do not have access to a coach when a transition starts. The listening tour, the stakeholder map, the 30/60/90 structure. These things help. This product is my attempt to make them available to more people. It is not a replacement for real coaching. But it is a real tool, built by someone who has been in the room.
             </p>
             <p style={{ fontSize: "15px", lineHeight: "1.8", color: "var(--color-text-secondary)" }}>
               I am based in Cardiff, Wales. I also run a fractional CPO practice, a community called The Product Room, and a Substack called Notes in the Margins.
