@@ -347,7 +347,7 @@ export default function DashboardPage() {
         {/* Action cards — 2x2 grid */}
         <div style={{ marginBottom: "2.5rem" }}>
           {/* Row 1: Flight Plan + Ground Control */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "16px" }}>
+          <div className="dashboard-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "16px" }}>
 
             <Link href="/plan" style={{ textDecoration: "none" }}>
               <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
@@ -383,7 +383,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Row 2: Captain's Log + Flight Crew */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+          <div className="dashboard-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
 
             <Link href="/captains-log" style={{ textDecoration: "none" }}>
               <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
