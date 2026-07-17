@@ -315,15 +315,13 @@ export default function DashboardPage() {
         {/* Header */}
         <div style={{ marginBottom: "2.5rem" }}>
           <p className="eyebrow" style={{ marginBottom: "8px" }}>Mission dashboard</p>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
-            <div>
-              <h1 style={{ fontSize: "2rem", marginBottom: "4px" }}>{briefing.role}</h1>
-              <p style={{ color: "var(--color-text-tertiary)", fontSize: "14px" }}>{briefing.company_stage}</p>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div className="instrument" style={{ fontSize: "1.5rem", color: "var(--color-teal)" }}>{daysLabel}</div>
-              <div style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginTop: "2px" }}>Current phase: {phase}</div>
-            </div>
+          <div style={{ marginBottom: "8px" }}>
+            <h1 style={{ fontSize: "clamp(1.4rem, 5vw, 2rem)", marginBottom: "4px" }}>{briefing.role}</h1>
+            <p style={{ color: "var(--color-text-tertiary)", fontSize: "14px" }}>{briefing.company_stage}</p>
+          </div>
+          <div>
+            <div className="instrument" style={{ fontSize: "clamp(1rem, 4vw, 1.5rem)", color: "var(--color-teal)" }}>{daysLabel}</div>
+            <div style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginTop: "2px" }}>Current phase: {phase}</div>
           </div>
         </div>
 
