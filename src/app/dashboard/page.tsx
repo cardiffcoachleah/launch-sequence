@@ -344,73 +344,81 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Action cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "2.5rem" }}>
+        {/* Action cards — 2x2 grid */}
+        <div style={{ marginBottom: "2.5rem" }}>
+          {/* Row 1: Flight Plan + Ground Control */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "16px" }}>
 
-          <Link href="/plan" style={{ textDecoration: "none" }}>
-            <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(14,178,205,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-teal)", flexShrink: 0 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13"/><path d="M15 7v13"/></svg>
+            <Link href="/plan" style={{ textDecoration: "none" }}>
+              <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(14,178,205,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-teal)", flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13"/><path d="M15 7v13"/></svg>
+                  </div>
+                  <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Flight plan</div>
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Flight plan</div>
+                <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
+                  Your personalized 90-day transition plan. Review your actions and reflection prompts for each phase.
+                </p>
               </div>
-              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
-                Your personalized 90-day transition plan. Review your actions and reflection prompts for each phase.
-              </p>
-            </div>
-          </Link>
+            </Link>
 
-          <Link href="/ground-control" style={{ textDecoration: "none" }}>
-            <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(245,166,35,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-amber)", flexShrink: 0 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.566"/></svg>
+            <Link href="/ground-control" style={{ textDecoration: "none" }}>
+              <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(245,166,35,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-amber)", flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19.5 12.572l-7.5 7.428l-7.5-7.428A5 5 0 1112 6.006a5 5 0 117.5 6.566"/></svg>
+                  </div>
+                  <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Ground control</div>
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Ground control</div>
+                <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
+                  Weekly wellbeing check-ins. How are you actually holding up?
+                </p>
+                {recentCheckins.length > 0 && (
+                  <MiniSparkline data={recentCheckins} />
+                )}
               </div>
-              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
-                Weekly wellbeing check-ins. How are you actually holding up?
-              </p>
-              {recentCheckins.length > 0 && (
-                <MiniSparkline data={recentCheckins} />
-              )}
-            </div>
-          </Link>
+            </Link>
 
-          <Link href="/captains-log" style={{ textDecoration: "none" }}>
-            <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(106,232,164,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-mint)", flexShrink: 0 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+
+          {/* Row 2: Captain's Log + Flight Crew */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+
+            <Link href="/captains-log" style={{ textDecoration: "none" }}>
+              <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(106,232,164,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-mint)", flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  </div>
+                  <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Captain's log</div>
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Captain's log</div>
+                <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
+                  Notes, observations, and reflections as you go.
+                </p>
               </div>
-              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
-                Notes, observations, and reflections as you go.
-              </p>
-            </div>
-          </Link>
+            </Link>
 
-          <Link href="/flight-crew" style={{ textDecoration: "none" }}>
-            <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(167,139,250,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a78bfa", flexShrink: 0 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
+            <Link href="/flight-crew" style={{ textDecoration: "none" }}>
+              <div className="card" style={{ cursor: "pointer", transition: "all 0.2s", height: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid rgba(167,139,250,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#a78bfa", flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Flight crew</div>
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>Flight crew</div>
+                <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
+                  The people who matter to this transition. Track who to meet and what you are learning.
+                </p>
               </div>
-              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", lineHeight: "1.5", margin: 0 }}>
-                The people who matter to this transition. Track who to meet and what you are learning.
-              </p>
-            </div>
-          </Link>
+            </Link>
 
+          </div>
         </div>
 
         {/* Past missions */}
