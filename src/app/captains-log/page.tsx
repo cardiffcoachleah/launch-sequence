@@ -75,6 +75,7 @@ export default function CaptainsLogPage() {
   const [entryText, setEntryText] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [writeMode, setWriteMode] = useState<"reflection" | "note">("reflection");
 
   // Insights state
   const [insights, setInsights] = useState<InsightResult | null>(null);
@@ -124,8 +125,10 @@ export default function CaptainsLogPage() {
       .insert({
         user_id: user.id,
         phase: currentPhase,
-        prompt: PHASE_PROMPTS[currentPhase],
+        prompt: writeMode === "reflection" ? PHASE_PROMPTS[currentPhase] : null,
         entry: entryText.trim(),
+        action_key: writeMode === "reflection" ? "reflection" : null,
+        action_title: writeMode === "reflection" ? `Phase reflection — ${PHASE_LABELS[currentPhase]}` : null,
       })
       .select()
       .single();
@@ -231,7 +234,32 @@ export default function CaptainsLogPage() {
         {/* Write tab */}
         {activeTab === "write" && (
           <div>
-            <div style={{ marginBottom: "1.5rem", padding: "12px 16px", background: "var(--color-bg-card)", border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius)", display: "flex", alignItems: "center", gap: "10px" }}>
+            {/* Mode toggle */}
+            <div style={{ display: "flex", gap: "6px", marginBottom: "1.5rem" }}>
+              {(["reflection", "note"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setWriteMode(mode)}
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    padding: "6px 16px",
+                    borderRadius: "20px",
+                    border: `1px solid ${writeMode === mode ? "var(--color-teal)" : "var(--color-border-subtle)"}`,
+                    background: writeMode === mode ? "rgba(14,178,205,0.1)" : "transparent",
+                    color: writeMode === mode ? "var(--color-teal)" : "var(--color-text-tertiary)",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+
+            {/* Current phase indicator */}
+            <div style={{ marginBottom: "1.25rem", padding: "10px 14px", background: "var(--color-bg-card)", border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius)", display: "flex", alignItems: "center", gap: "10px" }}>
               <span className="instrument" style={{ fontSize: "12px", color: "var(--color-teal)" }}>
                 {phaseNumbers[currentPhase] || "T-10"}
               </span>
@@ -240,29 +268,38 @@ export default function CaptainsLogPage() {
               </span>
             </div>
 
-            <div className="card-warm" style={{ marginBottom: "1.5rem" }}>
-              <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>This phase prompt</p>
-              <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 400, fontStyle: "italic", color: "var(--color-text-primary)", lineHeight: "1.6", margin: 0 }}>
-                {PHASE_PROMPTS[currentPhase]}
+            {/* Reflection mode — structured, prompted */}
+            {writeMode === "reflection" && (
+              <div className="card-warm" style={{ marginBottom: "1.5rem" }}>
+                <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>Phase reflection</p>
+                <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", fontWeight: 400, fontStyle: "italic", color: "var(--color-text-primary)", lineHeight: "1.6", margin: 0 }}>
+                  {PHASE_PROMPTS[currentPhase]}
+                </p>
+              </div>
+            )}
+
+            {/* Note mode — freeform */}
+            {writeMode === "note" && (
+              <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "1rem", lineHeight: "1.5" }}>
+                Capture whatever is on your mind — observations, things you noticed, conversations, questions. No prompt needed.
               </p>
-            </div>
+            )}
 
             <div style={{ marginBottom: "1rem" }}>
-              <label style={{ fontSize: "14px", color: "var(--color-text-tertiary)", marginBottom: "8px", display: "block" }}>
-                Your notes — respond to the prompt above, or write whatever is on your mind.
-              </label>
               <textarea
                 value={entryText}
                 onChange={(e) => setEntryText(e.target.value)}
-                placeholder="What's on your mind? What did you notice today? What are you learning about the role, the team, yourself?"
-                rows={8}
-                style={{ resize: "vertical", minHeight: "180px" }}
+                placeholder={writeMode === "reflection"
+                  ? "Take your time with this one. What is true for you right now?"
+                  : "What are you noticing? What happened today? What do you want to remember?"}
+                rows={writeMode === "reflection" ? 8 : 6}
+                style={{ resize: "vertical", minHeight: "160px" }}
               />
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <button onClick={handleSave} disabled={!entryText.trim() || saving} className="btn-primary">
-                {saving ? "Saving..." : "Save entry"}
+                {saving ? "Saving..." : writeMode === "reflection" ? "Save reflection" : "Save note"}
               </button>
               {saved && (
                 <span style={{ fontSize: "13px", color: "var(--color-mint)", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -294,12 +331,18 @@ export default function CaptainsLogPage() {
                   const date = new Date(entry.created_at).toLocaleDateString("en-US", {
                     month: "short", day: "numeric", year: "numeric"
                   });
-                  const isActionNote = !!entry.action_title;
+                  const isActionNote = !!entry.action_title && entry.action_key !== "reflection";
+                  const isReflection = entry.action_key === "reflection";
                   return (
-                    <div key={entry.id} className="card">
+                    <div key={entry.id} className={isReflection ? "card-warm" : "card"}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span className="instrument" style={{ fontSize: "11px", color: isActionNote ? "var(--color-mint)" : "var(--color-teal)" }}>
+                          {isReflection && (
+                            <span style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--color-amber)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                              Reflection
+                            </span>
+                          )}
+                          <span className="instrument" style={{ fontSize: "11px", color: isReflection ? "var(--color-amber)" : isActionNote ? "var(--color-mint)" : "var(--color-teal)" }}>
                             {PHASE_LABELS[entry.phase] || entry.phase}
                           </span>
                           {isActionNote && (
@@ -310,12 +353,21 @@ export default function CaptainsLogPage() {
                         </div>
                         <span style={{ fontSize: "12px", color: "var(--color-text-minimum)" }}>{date}</span>
                       </div>
-                      {!isActionNote && entry.prompt && (
-                        <p style={{ fontSize: "12px", color: "var(--color-text-minimum)", fontStyle: "italic", marginBottom: "8px", lineHeight: "1.5" }}>
+                      {isReflection && entry.prompt && (
+                        <p style={{ fontFamily: "var(--font-heading)", fontSize: "13px", fontStyle: "italic", color: "var(--color-text-tertiary)", marginBottom: "8px", lineHeight: "1.5" }}>
                           {entry.prompt}
                         </p>
                       )}
-                      <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: "1.7", margin: 0, whiteSpace: "pre-wrap" }}>
+                      <p style={{
+                        fontSize: "14px",
+                        color: "var(--color-text-secondary)",
+                        lineHeight: "1.7",
+                        margin: 0,
+                        whiteSpace: "pre-wrap",
+                        fontFamily: isReflection ? "var(--font-heading)" : "var(--font-body)",
+                        fontStyle: isReflection ? "italic" : "normal",
+                        fontSize: isReflection ? "1rem" : "14px",
+                      } as React.CSSProperties}>
                         {entry.entry}
                       </p>
                     </div>
