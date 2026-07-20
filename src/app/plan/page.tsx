@@ -485,7 +485,11 @@ function PlanPageInner() {
       const res = await fetch("/api/access-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "validate", code: accessCode, email: "" }),
+        body: JSON.stringify({
+          action: "validate",
+          code: accessCode,
+          email: localStorage.getItem("ls_requester_email") || "",
+        }),
       });
       const result = await res.json();
       if (result.valid) {
@@ -503,9 +507,32 @@ function PlanPageInner() {
   }
 
   async function handleRequestCode() {
-    if (!requestName.trim() || !requestEmail.trim()) return;
+    if (!requestName.trim() || !requestEmail.trim() || !plan) return;
     setAccessLoading(true);
+    setAccessError("");
     try {
+      const supabase = createClient();
+
+      // Step 1: Send magic link so they can return to their saved plan
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: requestEmail.trim(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/plan`,
+          data: { name: requestName.trim() },
+        },
+      });
+
+      if (otpError) {
+        setAccessError("Couldn't send the magic link. Try again.");
+        setAccessLoading(false);
+        return;
+      }
+
+      // Step 2: Store their name so the notification email is personal
+      localStorage.setItem("ls_requester_name", requestName.trim());
+      localStorage.setItem("ls_requester_email", requestEmail.trim());
+
+      // Step 3: Send notification to Leah + confirmation to user
       await fetch("/api/access-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -516,6 +543,7 @@ function PlanPageInner() {
           transition_type: briefingTransitionType,
         }),
       });
+
       setRequestSent(true);
     } catch {
       setAccessError("Something went wrong. Try again.");
@@ -1240,9 +1268,17 @@ function PlanPageInner() {
 
                 {requestSent ? (
                   <div>
-                    <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: "1.7", marginBottom: "1.5rem" }}>
-                      Thanks. Leah will send your access code within 24 hours. Keep an eye on your inbox.
+                    <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", lineHeight: "1.7", marginBottom: "8px" }}>
+                      Done. Two things just happened:
                     </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "1.5rem" }}>
+                      <div style={{ padding: "12px 14px", background: "var(--color-bg-card)", border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius)", fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6" }}>
+                        <strong style={{ color: "var(--color-text-primary)" }}>Your plan is saved.</strong> Check your email for a link to return to it anytime.
+                      </div>
+                      <div style={{ padding: "12px 14px", background: "var(--color-bg-card)", border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius)", fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6" }}>
+                        <strong style={{ color: "var(--color-text-primary)" }}>Access code request sent.</strong> Leah will send your code within 24 hours.
+                      </div>
+                    </div>
                     <button onClick={() => setShowAccessModal(false)} className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                       Got it
                     </button>
