@@ -173,6 +173,8 @@ function PlanPageInner() {
   const [savingEdit, setSavingEdit] = useState(false);
   const [ripples, setRipples] = useState<{ action_title: string; phase?: string; reason: string }[]>([]);
   const [rippleKey, setRippleKey] = useState<string | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [t10Tab, setT10Tab] = useState<"actions" | "prepare">("actions");
 
   // Access control
   const [hasAccess, setHasAccess] = useState(false);
@@ -862,8 +864,105 @@ function PlanPageInner() {
                 </div>
               )}
 
+          {/* T-10 tabs */}
+          {activePhase === "t10" && (
+            <div style={{ display: "flex", gap: "4px", marginBottom: "1.5rem", borderBottom: "1px solid var(--color-border-subtle)" }}>
+              {(["actions", "prepare"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setT10Tab(tab)}
+                  style={{
+                    padding: "8px 16px",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    color: t10Tab === tab ? "var(--color-teal)" : "var(--color-text-tertiary)",
+                    background: "none",
+                    border: "none",
+                    borderBottom: t10Tab === tab ? "2px solid var(--color-teal)" : "2px solid transparent",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    marginBottom: "-1px",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {tab === "actions" ? "Actions" : "Reading + Reflection"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Prepare tab — T-10 only */}
+          {activePhase === "t10" && t10Tab === "prepare" && (
+            <div>
+              <div className="card-warm" style={{ marginBottom: "1.5rem" }}>
+                <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>Reflection</p>
+                <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.15rem", fontWeight: 400, fontStyle: "italic", color: "var(--color-text-primary)", lineHeight: "1.6", margin: 0 }}>
+                  {phase.reflection}
+                </p>
+              </div>
+              {phase.resources && (
+                <div>
+                  <p className="eyebrow" style={{ marginBottom: "16px" }}>Recommended reading</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {phase.resources.books && phase.resources.books.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Books</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {phase.resources.books.map((book, i) => (
+                            <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-teal)" }}>
+                              <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                                {book.title}
+                                {book.author && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {book.author}</span>}
+                              </div>
+                              <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{book.why}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {phase.resources.podcasts && phase.resources.podcasts.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Podcasts</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {phase.resources.podcasts.map((pod, i) => (
+                            <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-mint)" }}>
+                              <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                                {pod.title}
+                                {pod.creator && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {pod.creator}</span>}
+                              </div>
+                              <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{pod.why}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {phase.resources.articles && phase.resources.articles.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Articles</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {phase.resources.articles.map((art, i) => (
+                            <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-amber)" }}>
+                              <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
+                                {art.title}
+                                {art.source && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {art.source}</span>}
+                              </div>
+                              <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{art.why}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Actions tab — all phases, or T-10 when actions tab active */}
+          {(activePhase !== "t10" || t10Tab === "actions") && (
+            <>
           {/* Actions */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "2.5rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "2.5rem" }}>
             {phase.actions.map((action, i) => {
               const cat = categoryStyles[action.category] || categoryStyles.logistics;
               const statusKey = getStatusKey(activePhase, i);
@@ -873,31 +972,52 @@ function PlanPageInner() {
               const isNA = status === "not_applicable";
               const isDimmed = isDone || isNA;
               const showRipple = ripples.length > 0 && rippleKey === statusKey;
+              const isExpanded = expandedCards.has(statusKey);
+
+              function toggleCard() {
+                setExpandedCards((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(statusKey)) {
+                    next.delete(statusKey);
+                  } else {
+                    next.add(statusKey);
+                  }
+                  return next;
+                });
+              }
 
               return (
                 <div key={i}>
                   <div
-                    onClick={() => editingKey !== statusKey && cycleStatus(activePhase, i)}
                     style={{
                       background: cat.bg,
                       border: `1px solid ${isDone ? "rgba(106,232,164,0.3)" : isNA ? "var(--color-border-subtle)" : cat.border}`,
                       borderRadius: "var(--radius)",
-                      padding: "1rem",
-                      cursor: isLoggedIn && editingKey !== statusKey ? "pointer" : "default",
-                      transition: "all 0.2s",
                       opacity: isNA ? 0.4 : 1,
+                      transition: "all 0.2s",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                      {/* Status indicator */}
+                    {/* Collapsed row — always visible */}
+                    <div
+                      onClick={() => editingKey !== statusKey ? toggleCard() : null}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "12px 14px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {/* Status dot */}
                       {isLoggedIn && (
                         <div
+                          onClick={(e) => { e.stopPropagation(); cycleStatus(activePhase, i); }}
                           style={{
-                            width: "24px", height: "24px", borderRadius: "50%",
+                            width: "20px", height: "20px", borderRadius: "50%",
                             border: `1px solid ${isDone ? "var(--color-mint)" : "var(--color-border)"}`,
                             background: statusConfig.bg,
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            color: statusConfig.color, flexShrink: 0, marginTop: "2px", transition: "all 0.2s",
+                            color: statusConfig.color, flexShrink: 0, cursor: "pointer", transition: "all 0.2s",
                           }}
                           title={`Status: ${statusConfig.label}. Click to change.`}
                         >
@@ -905,10 +1025,36 @@ function PlanPageInner() {
                         </div>
                       )}
 
-                      {/* Content */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* Title */}
+                      <div style={{
+                        flex: 1,
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: isDimmed ? "var(--color-text-tertiary)" : "var(--color-text-primary)",
+                        textDecoration: isDone ? "line-through" : "none",
+                        transition: "all 0.2s",
+                      }}>
+                        {action.title}
+                      </div>
+
+                      {/* Category dot */}
+                      <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
+
+                      {/* Expand chevron */}
+                      <svg
+                        width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ color: "var(--color-text-minimum)", flexShrink: 0, transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+                      >
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </div>
+
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div style={{ padding: "0 14px 14px 14px", borderTop: "1px solid var(--color-border-subtle)" }}>
                         {editingKey === statusKey ? (
-                          <div onClick={(e) => e.stopPropagation()}>
+                          <div style={{ paddingTop: "12px" }} onClick={(e) => e.stopPropagation()}>
                             <input
                               type="text"
                               value={editTitle}
@@ -923,118 +1069,74 @@ function PlanPageInner() {
                               style={{ marginBottom: "10px", fontSize: "13px", resize: "none" }}
                             />
                             <div style={{ display: "flex", gap: "8px" }}>
-                              <button
-                                onClick={() => saveEdit(activePhase, i)}
-                                disabled={!editTitle.trim() || savingEdit}
-                                className="btn-primary"
-                                style={{ padding: "5px 14px", fontSize: "12px" }}
-                              >
+                              <button onClick={() => saveEdit(activePhase, i)} disabled={!editTitle.trim() || savingEdit} className="btn-primary" style={{ padding: "5px 14px", fontSize: "12px" }}>
                                 {savingEdit ? "Saving..." : "Save"}
                               </button>
-                              <button onClick={() => setEditingKey(null)} className="back-link" style={{ fontSize: "12px" }}>
-                                Cancel
-                              </button>
+                              <button onClick={() => setEditingKey(null)} className="back-link" style={{ fontSize: "12px" }}>Cancel</button>
                             </div>
                           </div>
                         ) : (
-                          <>
-                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "4px" }}>
-                              <div style={{
-                                fontSize: "14px", fontWeight: 500,
-                                color: isDimmed ? "var(--color-text-tertiary)" : "var(--color-text-primary)",
-                                textDecoration: isDone ? "line-through" : "none",
-                                transition: "all 0.2s",
-                              }}>
-                                {action.title}
+                          <div style={{ paddingTop: "12px" }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "8px" }}>
+                              <div style={{ fontSize: "13px", color: isDimmed ? "var(--color-text-minimum)" : "var(--color-text-secondary)", lineHeight: "1.6", flex: 1 }}>
+                                {action.description}
                               </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-                                {isLoggedIn && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingKey(statusKey);
-                                      setEditTitle(action.title);
-                                      setEditDescription(action.description);
-                                    }}
-                                    style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", color: "var(--color-text-minimum)", display: "flex", alignItems: "center", transition: "color 0.2s" }}
-                                    title="Edit this action"
-                                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
-                                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-minimum)")}
-                                  >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                    </svg>
-                                  </button>
-                                )}
-                                {isLoggedIn && (
-                                  <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: statusConfig.color, marginTop: "2px" }}>
-                                    {statusConfig.label}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div style={{ fontSize: "13px", color: isDimmed ? "var(--color-text-minimum)" : "var(--color-text-secondary)", lineHeight: "1.6", transition: "color 0.2s" }}>
-                              {action.description}
+                              {isLoggedIn && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setEditingKey(statusKey); setEditTitle(action.title); setEditDescription(action.description); }}
+                                  style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", color: "var(--color-text-minimum)", display: "flex", alignItems: "center", flexShrink: 0, transition: "color 0.2s" }}
+                                  title="Edit this action"
+                                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-teal)")}
+                                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-minimum)")}
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                  </svg>
+                                </button>
+                              )}
                             </div>
                             <div className="action-category-label" style={{ color: cat.color }}>
                               <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: cat.color, flexShrink: 0 }} />
                               {cat.label}
                             </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Inline notes — shown when in progress or done */}
-                    {isLoggedIn && (status === "in_progress" || status === "done") && (
-                      <div
-                        style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--color-border-subtle)" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {(notesMap[statusKey] || []).map((note) => (
-                          <div key={note.id} style={{ marginBottom: "8px", padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "var(--radius)", borderLeft: `2px solid ${cat.color}` }}>
-                            <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6", margin: "0 0 4px", whiteSpace: "pre-wrap" }}>
-                              {note.entry}
-                            </p>
-                            <span style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>
-                              {new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                            </span>
-                          </div>
-                        ))}
-                        {expandedNote !== statusKey ? (
-                          <button
-                            onClick={() => setExpandedNote(statusKey)}
-                            style={{ fontSize: "12px", color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer", padding: "4px 0", display: "flex", alignItems: "center", gap: "5px" }}
-                          >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 5v14M5 12h14"/>
-                            </svg>
-                            Add note
-                          </button>
-                        ) : (
-                          <div style={{ marginTop: "4px" }}>
-                            <textarea
-                              value={noteText[statusKey] || ""}
-                              onChange={(e) => setNoteText((prev) => ({ ...prev, [statusKey]: e.target.value }))}
-                              placeholder="What are you learning? What's happening with this action?"
-                              rows={3}
-                              autoFocus
-                              style={{ fontSize: "13px", marginBottom: "8px", resize: "none" }}
-                            />
-                            <div style={{ display: "flex", gap: "8px" }}>
-                              <button
-                                onClick={() => saveNote(activePhase, i, action.title)}
-                                disabled={!noteText[statusKey]?.trim() || savingNote === statusKey}
-                                className="btn-primary"
-                                style={{ padding: "6px 14px", fontSize: "12px" }}
-                              >
-                                {savingNote === statusKey ? "Saving..." : "Save note"}
-                              </button>
-                              <button onClick={() => setExpandedNote(null)} className="back-link" style={{ fontSize: "12px" }}>
-                                Cancel
-                              </button>
-                            </div>
+                            {/* Inline notes */}
+                            {isLoggedIn && (status === "in_progress" || status === "done") && (
+                              <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--color-border-subtle)" }} onClick={(e) => e.stopPropagation()}>
+                                {(notesMap[statusKey] || []).map((note) => (
+                                  <div key={note.id} style={{ marginBottom: "8px", padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "var(--radius)", borderLeft: `2px solid ${cat.color}` }}>
+                                    <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", lineHeight: "1.6", margin: "0 0 4px", whiteSpace: "pre-wrap" }}>{note.entry}</p>
+                                    <span style={{ fontSize: "11px", color: "var(--color-text-minimum)" }}>
+                                      {new Date(note.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                    </span>
+                                  </div>
+                                ))}
+                                {expandedNote !== statusKey ? (
+                                  <button onClick={() => setExpandedNote(statusKey)} style={{ fontSize: "12px", color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer", padding: "4px 0", display: "flex", alignItems: "center", gap: "5px" }}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                                    Add note
+                                  </button>
+                                ) : (
+                                  <div style={{ marginTop: "4px" }}>
+                                    <textarea
+                                      value={noteText[statusKey] || ""}
+                                      onChange={(e) => setNoteText((prev) => ({ ...prev, [statusKey]: e.target.value }))}
+                                      placeholder="What are you learning? What's happening with this action?"
+                                      rows={3}
+                                      autoFocus
+                                      style={{ fontSize: "13px", marginBottom: "8px", resize: "none" }}
+                                    />
+                                    <div style={{ display: "flex", gap: "8px" }}>
+                                      <button onClick={() => saveNote(activePhase, i, action.title)} disabled={!noteText[statusKey]?.trim() || savingNote === statusKey} className="btn-primary" style={{ padding: "6px 14px", fontSize: "12px" }}>
+                                        {savingNote === statusKey ? "Saving..." : "Save note"}
+                                      </button>
+                                      <button onClick={() => setExpandedNote(null)} className="back-link" style={{ fontSize: "12px" }}>Cancel</button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1048,27 +1150,14 @@ function PlanPageInner() {
                     </div>
                   )}
 
-                  {/* Ripple notification — appears directly below the edited card */}
+                  {/* Ripple notification */}
                   {showRipple && (
-                    <div style={{
-                      padding: "12px 14px",
-                      background: "rgba(245,166,35,0.06)",
-                      border: "1px solid rgba(245,166,35,0.3)",
-                      borderLeft: "3px solid var(--color-amber)",
-                      borderRadius: "var(--radius)",
-                      marginTop: "4px",
-                    }}>
+                    <div style={{ padding: "12px 14px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.3)", borderLeft: "3px solid var(--color-amber)", borderRadius: "var(--radius)", marginTop: "4px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
                         <p className="eyebrow" style={{ color: "var(--color-amber)", margin: 0, fontSize: "11px" }}>Things to consider</p>
-                        <button
-                          onClick={() => { setRipples([]); setRippleKey(null); }}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "16px", lineHeight: 1, padding: 0 }}
-                          aria-label="Dismiss"
-                        >&times;</button>
+                        <button onClick={() => { setRipples([]); setRippleKey(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "16px", lineHeight: 1, padding: 0 }} aria-label="Dismiss">&times;</button>
                       </div>
-                      <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)", marginBottom: "8px", lineHeight: "1.5" }}>
-                        This change might affect:
-                      </p>
+                      <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)", marginBottom: "8px", lineHeight: "1.5" }}>This change might affect:</p>
                       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                         {ripples.map((r, ri) => (
                           <div key={ri} style={{ paddingLeft: "10px", borderLeft: "2px solid rgba(245,166,35,0.35)" }}>
@@ -1092,23 +1181,12 @@ function PlanPageInner() {
 
             {/* Ripple notification for add flow */}
             {ripples.length > 0 && rippleKey === "add_ripple" && (
-              <div style={{
-                padding: "14px 16px",
-                background: "rgba(245,166,35,0.06)",
-                border: "1px solid rgba(245,166,35,0.3)",
-                borderRadius: "var(--radius)",
-              }}>
+              <div style={{ padding: "14px 16px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.3)", borderRadius: "var(--radius)" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "10px" }}>
                   <p className="eyebrow" style={{ color: "var(--color-amber)", margin: 0 }}>Things to consider</p>
-                  <button
-                    onClick={() => { setRipples([]); setRippleKey(null); }}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "18px", lineHeight: 1, padding: 0 }}
-                    aria-label="Dismiss"
-                  >&times;</button>
+                  <button onClick={() => { setRipples([]); setRippleKey(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-minimum)", fontSize: "18px", lineHeight: 1, padding: 0 }} aria-label="Dismiss">&times;</button>
                 </div>
-                <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "10px", lineHeight: "1.5" }}>
-                  Based on what you added, these existing actions might be worth revisiting:
-                </p>
+                <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)", marginBottom: "10px", lineHeight: "1.5" }}>Based on what you added, these existing actions might be worth revisiting:</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {ripples.map((r, ri) => (
                     <div key={ri} style={{ paddingLeft: "12px", borderLeft: "2px solid rgba(245,166,35,0.4)" }}>
@@ -1128,80 +1206,18 @@ function PlanPageInner() {
             )}
           </div>
 
-          {/* Reflection prompt */}
-          <div className="card-warm">
-            <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>Reflection</p>
-            <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.15rem", fontWeight: 400, fontStyle: "italic", color: "var(--color-text-primary)", lineHeight: "1.6", margin: 0 }}>
-              {phase.reflection}
-            </p>
-          </div>
-
-          {/* T-10 Resources */}
-          {activePhase === "t10" && phase.resources && (
-            <div style={{ marginTop: "1.5rem" }}>
-              <p className="eyebrow" style={{ marginBottom: "16px" }}>Recommended reading</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-
-                {/* Books */}
-                {phase.resources.books && phase.resources.books.length > 0 && (
-                  <div>
-                    <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Books</p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      {phase.resources.books.map((book, i) => (
-                        <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-teal)" }}>
-                          <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
-                            {book.title}
-                            {book.author && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {book.author}</span>}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{book.why}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Podcasts */}
-                {phase.resources.podcasts && phase.resources.podcasts.length > 0 && (
-                  <div>
-                    <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Podcasts</p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      {phase.resources.podcasts.map((pod, i) => (
-                        <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-mint)" }}>
-                          <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
-                            {pod.title}
-                            {pod.creator && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {pod.creator}</span>}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{pod.why}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Articles */}
-                {phase.resources.articles && phase.resources.articles.length > 0 && (
-                  <div>
-                    <p style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-text-minimum)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Articles</p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      {phase.resources.articles.map((art, i) => (
-                        <div key={i} className="card" style={{ padding: "12px 14px", borderLeft: "2px solid var(--color-amber)" }}>
-                          <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "2px" }}>
-                            {art.title}
-                            {art.source && <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}> — {art.source}</span>}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "var(--color-text-tertiary)", lineHeight: "1.5" }}>{art.why}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              </div>
+          {/* Reflection prompt — non-T10 phases only */}
+          {activePhase !== "t10" && (
+            <div className="card-warm">
+              <p className="eyebrow" style={{ color: "var(--color-amber)", marginBottom: "8px" }}>Reflection</p>
+              <p style={{ fontFamily: "var(--font-heading)", fontSize: "1.15rem", fontWeight: 400, fontStyle: "italic", color: "var(--color-text-primary)", lineHeight: "1.6", margin: 0 }}>
+                {phase.reflection}
+              </p>
             </div>
           )}
-
           </>
           )}
+
 
           {/* Access code modal */}
           {showAccessModal && (
