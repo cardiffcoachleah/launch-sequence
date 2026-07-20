@@ -1218,7 +1218,7 @@ function PlanPageInner() {
           </>
           )}
 
-          </> {/* close hasAccess ternary : branch */}
+          </>
           )}
 
           {/* Access code modal */}
