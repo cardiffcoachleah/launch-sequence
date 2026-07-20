@@ -27,10 +27,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ valid: false, message: "This code has already been used. Request a new one below." });
       }
 
-      // Mark code as used
+      // Mark code as used with their actual email
       await supabase
         .from("access_codes")
-        .update({ used_by: email || "anonymous", used_at: new Date().toISOString() })
+        .update({ used_by: email?.trim() || "unknown", used_at: new Date().toISOString() })
         .eq("id", data.id);
 
       return NextResponse.json({ valid: true });
@@ -77,13 +77,13 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           from: "Leah Farmer <noreply@launchsequence.io>",
           to: email,
-          subject: "Your Launch Sequence access code request",
+          subject: "Your Launch Sequence plan is saved",
           html: `
             <p>Hi ${name},</p>
-            <p>Thanks for your interest in Launch Sequence. I'll review your request and send your access code within 24 hours.</p>
-            <p>In the meantime, your T-10 plan is ready and waiting for you.</p>
+            <p>Your T-10 plan has been saved. You can return to it anytime by clicking the link in the separate magic link email you just received.</p>
+            <p>I'll review your access code request and send your code within 24 hours. Once you have it, enter it on the plan page to unlock the full 90-day plan.</p>
             <p>Leah</p>
-            <p style="font-size:12px;color:#666;">This is a no-reply address. If you need help, email leah@leahfarmer.com.</p>
+            <p style="font-size:12px;color:#666;">Questions? Email leah@leahfarmer.com</p>
           `,
         }),
       });
